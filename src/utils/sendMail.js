@@ -1,23 +1,23 @@
 const nodemailer = require("nodemailer");
 
-const sendEmail = async(options) => {
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMPT_HOST,
-        port: process.env.SMPT_PORT,
-        secure: true,
-        requireTLS: true,
-        auth: {
-            user: process.env.SMPT_MAIL,
-            pass: process.env.SMPT_PASSWORD,
-        },
-    });
-    const mailOptions = {
-        from: process.env.SMPT,
-        to: options.email,
-        subject: options.subject,
-        html: options.html,
-    };
-    await transporter.sendMail(mailOptions);
+const sendEmail = async (options) => {
+  const transporter = nodemailer.createTransport({
+    host: process.env.smpt_host,
+    port: process.env.smpt_port,
+    secure: true,
+    requireTLS: true,
+    auth: {
+      user: process.env.smpt_mail,
+      pass: process.env.smpt_password,
+    },
+  });
+  const mailOptions = {
+    from: process.env.SMPT,
+    to: options.email,
+    subject: options.subject,
+    html: options.html,
+  };
+  await transporter.sendMail(mailOptions);
 };
 
 module.exports = sendEmail;
