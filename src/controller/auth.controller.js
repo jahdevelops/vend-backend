@@ -84,13 +84,19 @@ exports.register = catchAsyncErrors(async(req, res, next) => {
                         const link = `${url.client}/email-verification?uid=${data[0].id}&verifyToken=${verifyToken}`;
                         const body = `Your email Verification Token is :-\n\n ${link} (This is only available for 15 Minutes!)\n\nif you have not requested this email  then, please Ignore it`;
                         await sendEmail({
-                            email: `${data[0].first_name} <${data[0].email}>`,
-                            subject: "Veritfy Account",
-                            html: body,
-                        });
-                        return res
-                            .status(201)
-                            .json({ message: "User created Successfully", user: data[0] });
+                                email: `${data[0].first_name} <${data[0].email}>`,
+                                subject: "Veritfy Account",
+                                html: body,
+                            })
+                            .then(() => {
+                                return res.status(201).json({
+                                    message: "User created Successfully",
+                                    user: data[0],
+                                });
+                            })
+                            .catch((err) => {
+                                return next(new ErrorHandler(err.message, 500));
+                            });
                     });
                 }
             });
@@ -297,13 +303,18 @@ exports.verifyEmail = catchAsyncErrors(async(req, res, next) => {
                     return next(new ErrorHandler(err.message, 500));
                 }
                 await sendEmail({
-                    email: `${data[0].first_name} <${data[0].email}>`,
-                    subject: "Account Verified Succefully",
-                    html: "Your account has be verified successfully",
-                });
-                return res.status(200).json({
-                    message: "Email Verified Successfully",
-                });
+                        email: `${data[0].first_name} <${data[0].email}>`,
+                        subject: "Account Verified Succefully",
+                        html: "Your account has be verified successfully",
+                    })
+                    .then(() => {
+                        return res.status(200).json({
+                            message: "Email Verified Successfully",
+                        });
+                    })
+                    .catch((err) => {
+                        return next(new ErrorHandler(err.message, 500));
+                    });
             });
         });
     });

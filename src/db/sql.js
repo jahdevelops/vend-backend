@@ -1,6 +1,6 @@
 exports.findUserByEmail = "SELECT * FROM users WHERE email = ?";
 exports.findUserById =
-  "SELECT id, `first_name`, `last_name`, `email`, `role`, `isVerified` FROM users WHERE id =?";
+    "SELECT id, `first_name`, `last_name`, `email`, `role`, `isVerified`,`phoneNumber`,`id_number` FROM users WHERE id =?";
 exports.createUser = `INSERT INTO users(
 id,
     first_name,
@@ -22,6 +22,26 @@ exports.updateUserPassword = `
     UPDATE users
     SET
         password = ?
+    WHERE id = ?
+`;
+exports.updateUserPhone = `
+    UPDATE users
+    SET
+        phoneNumber = ?
+    WHERE id = ?
+`;
+
+exports.updateUserRole = `
+    UPDATE users
+    SET
+        role = ?
+    WHERE id = ?
+`;
+
+exports.becomeSeller = `
+    UPDATE users
+    SET
+        id_number = ?
     WHERE id = ?
 `;
 

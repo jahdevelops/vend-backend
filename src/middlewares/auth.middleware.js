@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const mysqlConnect = require("../db");
 const { findUserById } = require("../db/sql");
 const { jwt_secret } = require("../config");
+const { userNotFound } = require("../messages/error.messages");
 
 exports.isAuthenticatedUser = catchAsyncErrors(async(req, res, next) => {
     const authHeader = req.headers["authorization"];
@@ -18,7 +19,9 @@ exports.isAuthenticatedUser = catchAsyncErrors(async(req, res, next) => {
     const token = authHeader.split(" ")[1];
     const decodedData = jwt.verify(token, jwt_secret);
     mysqlConnect.query(findUserById, [decodedData.id], (err, data) => {
-        if (err) new ErrorHandler("User not found", 401);
+        if (err) return next(new ErrorHandler(err.message, 500));
+        if (!data.length)
+            return next(new ErrorHandler(userNotFound.message, userNotFound.code));
         req.user = data[0];
         next();
     });
