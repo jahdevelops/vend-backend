@@ -23,16 +23,16 @@ app.use(credentials);
 app.use(cors(corsOptions));
 
 const sessionConfig = {
-  secret: "egeGBTCTEcgwrtgc54cg66666666h.b/3/3.b/[g[er2",
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-    expires: Date.now() + 1000 + 60 * 60 * 24 * 7,
-    maxAge: 1000 + 60 * 60 * 24 * 7,
-  },
+    secret: "egeGBTCTEcgwrtgc54cg66666666h.b/3/3.b/[g[er2",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        expires: Date.now() + 1000 + 60 * 60 * 24 * 7,
+        maxAge: 1000 + 60 * 60 * 24 * 7,
+    },
 };
 app.use(session(sessionConfig));
 
