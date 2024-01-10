@@ -1,4 +1,5 @@
 const express = require("express");
+// require('express-async-errors')
 const app = express();
 const errorMiddleware = require("./middlewares/error");
 const cookieParser = require("cookie-parser");
@@ -8,11 +9,15 @@ const cors = require("cors");
 const credentials = require("./middlewares/credentials");
 const corsOptions = require("./config/corsOptions");
 const routes = require("./routes");
+const morgan = require("morgan");
+const helmet = require("helmet");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(morgan("common"));
 
 app.use(credentials);
 app.use(cors(corsOptions));

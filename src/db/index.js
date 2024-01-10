@@ -1,32 +1,33 @@
 require("dotenv/config");
 const mysql = require("mysql2");
+const { database } = require("../config");
 
 const mysqlConnect = mysql.createConnection({
-    host: process.env.db_host,
-    port: process.env.db_port,
-    user: process.env.db_user,
-    password: process.env.db_password,
-    database: process.env.db_database,
+  host: database.host,
+  port: database.port,
+  user: database.user,
+  password: database.password,
+  database: database.database,
 });
 
 mysqlConnect.query("CREATE DATABASE IF NOT EXISTS vend");
 
-mysqlConnect.connect(async(err) => {
-    if (err) {
-        console.error(err);
-        return;
-    } else {
-        console.log("::>🚀Database connected");
-    }
+mysqlConnect.connect(async (err) => {
+  if (err) {
+    console.error(err);
+    return;
+  } else {
+    console.log("::>🚀Database connected");
+  }
 });
 
 try {
-    mysqlConnect.query("USE vend", (err, result) => {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        const createUsersTable = `CREATE TABLE IF NOT EXISTS users (
+  mysqlConnect.query("USE vend", (err) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    const createUsersTable = `CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(36) PRIMARY KEY,
     first_name VARCHAR(255),
     last_name VARCHAR(255),
@@ -35,22 +36,29 @@ try {
     role VARCHAR(255),
     isVerified BOOLEAN,
     emailToken VARCHAR(255),
-    emailTokenExpire DATE,  -- Change TIMESTAMP to DATE
+    emailTokenExpire TIMESTAMP,  
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 `;
 
-        mysqlConnect.query(createUsersTable, (err, results, fields) => {
-            if (err) {
-                console.error("Error creating table", err);
-                return;
-            }
+    const createTokenTable = `CREATE TABLE IF NOT EXISTS token (
+    id VARCHAR(36) PRIMARY KEY,
+    userId VARCHAR(255),
+    token VARCHAR(255),
+    type ENUM('reset_password', 'verify_email', 'refresh_token'),
+    expiresAt TIMESTAMP,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)`;
 
-            console.log("Users table created");
-        });
+    mysqlConnect.query(createUsersTable, (err) => {
+      if (err) return console.error("Error creating table", err);
     });
+    mysqlConnect.query(createTokenTable, (err) => {
+      if (err) return console.error("Error creating table", err);
+    });
+  });
 } catch (error) {
-    console.error("Error connecting to the database:", error);
+  console.error("Error connecting to the database:", error);
 }
 
 module.exports = mysqlConnect;

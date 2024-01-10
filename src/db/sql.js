@@ -8,6 +8,27 @@ id,
     email,
     password,
     role,
-    isVerified,emailToken,emailTokenExpire) VALUES ( ? )
+    isVerified) VALUES ( ? )
 `;
+
+exports.updateUserVerification = `
+    UPDATE users
+    SET
+        isVerified = ?
+    WHERE id = ?
+`;
+
+exports.updateUserPassword = `
+    UPDATE users
+    SET
+        password = ?
+    WHERE id = ?
+`;
+
 exports.findUserWithPassword = "SELECT * FROM users WHERE email = ?";
+
+exports.createToken = `INSERT INTO token(id,userId,token,type,expiresAt) VALUES (?)`;
+
+exports.findToken = `SELECT * FROM token WHERE userId =? AND type=?`;
+exports.deleteToken = `DELETE FROM token WHERE userId = ? AND type = ?`;
+exports.deleteTokenOne = `DELETE FROM token WHERE userId = ? AND type = ? AND id=?`;
