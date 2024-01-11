@@ -1,6 +1,6 @@
 exports.findUserByEmail = "SELECT * FROM users WHERE email = ?";
 exports.findUserById =
-    "SELECT id, `first_name`, `last_name`, `email`, `role`, `isVerified`,`phoneNumber`,`id_number` FROM users WHERE id =?";
+  "SELECT id, `first_name`, `last_name`, `email`, `role`, `isVerified`,`phoneNumber`,`id_number` FROM users WHERE id =?";
 exports.createUser = `INSERT INTO users(
 id,
     first_name,

@@ -6,8 +6,8 @@ const router = express.Router();
 //     checkVerified,
 // } = require("../middlewares/auth.middleware");
 const {
-    indexProducts,
-    getProduct,
+  indexProducts,
+  getProduct,
 } = require("../controller/product.controller");
 
 router.route("/").get(indexProducts);

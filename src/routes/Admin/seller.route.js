@@ -1,8 +1,8 @@
 const express = require("express");
 
 const {
-    getPendingSellers,
-    approveNewSeller,
+  getPendingSellers,
+  approveNewSeller,
 } = require("../../controller/Admin/seller.controler");
 const router = express.Router();
 

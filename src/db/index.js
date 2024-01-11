@@ -2,31 +2,31 @@ require("dotenv/config");
 const mysql = require("mysql2");
 const { database } = require("../config");
 const mysqlConnect = mysql.createConnection({
-    host: database.host,
-    port: database.port,
-    user: database.user,
-    password: database.password,
-    database: database.database,
+  host: database.host,
+  port: database.port,
+  user: database.user,
+  password: database.password,
+  database: database.database,
 });
 
 mysqlConnect.query("CREATE DATABASE IF NOT EXISTS vend");
 
-mysqlConnect.connect(async(err) => {
-    if (err) {
-        console.error(err);
-        return;
-    } else {
-        console.log("::>🚀Database connected");
-    }
+mysqlConnect.connect(async (err) => {
+  if (err) {
+    console.error(err);
+    return;
+  } else {
+    console.log("::>🚀Database connected");
+  }
 });
 
 try {
-    mysqlConnect.query("USE vend", (err) => {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        const createUsersTable = `CREATE TABLE IF NOT EXISTS users (
+  mysqlConnect.query("USE vend", (err) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    const createUsersTable = `CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(36) PRIMARY KEY,
     first_name VARCHAR(255),
     last_name VARCHAR(255),
@@ -40,7 +40,7 @@ try {
 )
 `;
 
-        const createTokenTable = `CREATE TABLE IF NOT EXISTS token (
+    const createTokenTable = `CREATE TABLE IF NOT EXISTS token (
     id VARCHAR(36) PRIMARY KEY,
     userId VARCHAR(255),
     token VARCHAR(255),
@@ -50,7 +50,7 @@ try {
     FOREIGN KEY (userId) REFERENCES users(id)
 )`;
 
-        const createProductTable = `CREATE TABLE IF NOT EXISTS product (
+    const createProductTable = `CREATE TABLE IF NOT EXISTS product (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
@@ -64,18 +64,18 @@ try {
     FOREIGN KEY (userId) REFERENCES users(id)
 )`;
 
-        mysqlConnect.query(createUsersTable, (err) => {
-            if (err) return console.error("Error creating table", err);
-        });
-        mysqlConnect.query(createTokenTable, (err) => {
-            if (err) return console.error("Error creating table", err);
-        });
-        mysqlConnect.query(createProductTable, (err) => {
-            if (err) return console.error("Error creating table", err);
-        });
+    mysqlConnect.query(createUsersTable, (err) => {
+      if (err) return console.error("Error creating table", err);
     });
+    mysqlConnect.query(createTokenTable, (err) => {
+      if (err) return console.error("Error creating table", err);
+    });
+    mysqlConnect.query(createProductTable, (err) => {
+      if (err) return console.error("Error creating table", err);
+    });
+  });
 } catch (error) {
-    console.error("Error connecting to the database:", error);
+  console.error("Error connecting to the database:", error);
 }
 
 module.exports = mysqlConnect;
