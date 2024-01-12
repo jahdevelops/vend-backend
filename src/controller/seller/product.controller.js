@@ -7,6 +7,7 @@ const {
   updateProduct,
   findASellerProduct,
   deleteProduct,
+  createStock,
 } = require("../../db/sql");
 const {
   requiredField,
@@ -18,8 +19,16 @@ const ErrorHandler = require("../../utils/errorHandler");
 const cloudinary = require("cloudinary");
 const crypto = require("crypto");
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
-  const { name, price, description, product_details, specifications } =
-    req.body;
+  const {
+    name,
+    price,
+    description,
+    product_details,
+    specifications,
+    brandId,
+    categoryId,
+    stock,
+  } = req.body;
   const { id } = req.user;
   if (
     !name ||
@@ -27,6 +36,9 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     !description ||
     !product_details ||
     !specifications ||
+    !brandId ||
+    !stock ||
+    !categoryId ||
     !req.files.main_image ||
     !req.files.sub_image_1 ||
     !req.files.sub_image_2 ||
@@ -51,6 +63,7 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     };
 
     const product_id = crypto.randomUUID();
+    const stock_id = crypto.randomUUID();
     const values = [
       product_id,
       name,
@@ -97,15 +110,28 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
       product_details,
       specifications,
       data[0].id,
+      brandId,
+      categoryId,
+      stock_id,
     ];
-    mysql.query(createProduct, [values], (err) => {
+    const toNumber = Number(stock);
+    const stockValues = [stock_id, product_id, toNumber];
+    mysql.query(createStock, [stockValues], (err) => {
+      console.log("Omo na here o");
+      console.log(err);
       if (err) return next(new ErrorHandler(err.message, 500));
-      mysql.query(findProduct, [product_id], (err, product) => {
+      mysql.query(createProduct, [values], (err) => {
+        console.log("Na here 1");
         if (err) return next(new ErrorHandler(err.message, 500));
-        return res.status(201).json({
-          success: true,
-          message: "Product created successfully",
-          product: product[0],
+
+        mysql.query(findProduct, [product_id], (err, product) => {
+          console.log("Na here");
+          if (err) return next(new ErrorHandler(err.message, 500));
+          return res.status(201).json({
+            success: true,
+            message: "Product created successfully",
+            product: product[0],
+          });
         });
       });
     });

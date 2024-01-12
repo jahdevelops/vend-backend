@@ -3,7 +3,7 @@ const auth = require("./auth.route");
 const user = require("./user.route");
 const seller = require("./Seller");
 const admin = require("./Admin");
-const product = require("./product.route");
+const product = require("./Product");
 const {
   isAuthenticatedUser,
   checkVerified,

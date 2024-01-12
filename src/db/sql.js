@@ -78,10 +78,25 @@ AND isVerified = true`;
 
 //Products
 
-exports.createProduct = `INSERT INTO product (id,name, price, main_image, sub_images, description, product_details, specifications, userId) VALUES (?)`;
+exports.createProduct = `INSERT INTO product (id,name, price, main_image, sub_images, description, product_details, specifications, userId,brandId,categoryId,stockId) VALUES (?)`;
 exports.indexProduct = `SELECT * FROM product ORDER BY RAND()`;
 exports.findProduct = `SELECT * FROM product WHERE id=?`;
 exports.findSellersProduct = `SELECT * FROM product WHERE userId=?`;
 exports.findASellerProduct = `SELECT * FROM product WHERE userId=? AND id=?`;
 exports.updateProduct = `UPDATE product SET ? WHERE id=?`;
 exports.deleteProduct = `DELETE FROM product WHERE id=?`;
+
+//Categories
+
+exports.createCategories = `INSERT INTO categories(id,name) VALUES (?)`;
+exports.getCategories = `SELECT * FROM categories`;
+
+//Brand
+
+exports.createBrand = `INSERT INTO brands(id,name) VALUES (?)`;
+exports.getBrand = `SELECT * FROM brands`;
+
+//Stock
+
+exports.createStock = `INSERT INTO stocks(id,productId,quantity) VALUES (?)`;
+exports.getProductStock = `SELECT * FROM stocks WHERE id=? AND productId =?`;

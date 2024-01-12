@@ -8,7 +8,7 @@ const router = express.Router();
 const {
   indexProducts,
   getProduct,
-} = require("../controller/product.controller");
+} = require("../../controller/Products/product.controller");
 
 router.route("/").get(indexProducts);
 router.route("/:id").get(getProduct);

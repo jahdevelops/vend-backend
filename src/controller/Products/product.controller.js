@@ -1,12 +1,12 @@
-const mysql = require("../db");
-const { findProduct, indexProduct } = require("../db/sql");
-const { productNotFound } = require("../messages/error.messages");
-const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
-const ErrorHandler = require("../utils/errorHandler");
+const mysql = require("../../db");
+const { findProduct, indexProduct } = require("../../db/sql");
+const { productNotFound } = require("../../messages/error.messages");
+const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
+const ErrorHandler = require("../../utils/errorHandler");
 
 exports.indexProducts = catchAsyncErrors(async (req, res, next) => {
   const { page = 1 } = req.query;
-  const pageSize = 3;
+  const pageSize = 10;
   const offset = (page - 1) * pageSize;
 
   // Building the query with sorting options
