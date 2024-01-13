@@ -4,19 +4,8 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendMail");
 const bcrypt = require("bcryptjs");
-const mysql = require("../db");
-const {
-  findUserByEmail,
-  createUser,
-  findUserById,
-  createToken,
-  findToken,
-  deleteToken,
-  deleteTokenOne,
-  updateUserPassword,
-  updateUserVerification,
-  findUserWithPassword,
-} = require("../db/sql");
+const db = require("../model");
+const { Op, literal } = require("sequelize");
 const ms = require("ms");
 const {
   requiredField,
@@ -27,6 +16,9 @@ const {
   invalidPasswordFormat,
   unMatchedPassword,
 } = require("../messages/error.messages");
+
+const User = db.user;
+const Token = db.token;
 const { jwt_secret, url } = require("../config");
 
 exports.register = catchAsyncErrors(async (req, res, next) => {
@@ -34,111 +26,96 @@ exports.register = catchAsyncErrors(async (req, res, next) => {
   if (!email || !first_name || !last_name || !password) {
     return next(new ErrorHandler(requiredField.message, requiredField.code));
   }
-  mysql.query(findUserByEmail, [email], async (err, data) => {
-    if (err) {
-      return next(new ErrorHandler(err.message, 500));
-    }
-    if (data.length)
-      return next(
-        new ErrorHandler(alreadyExistUser.message, alreadyExistUser.code),
-      );
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
 
-    const passwordValidate = await validatePassword(password);
-    if (!passwordValidate) {
-      return next(
-        new ErrorHandler(
-          invalidPasswordFormat.message,
-          invalidPasswordFormat.code,
-        ),
-      );
-    }
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(password, salt);
-    const id = crypto.randomUUID();
+  const isExisting = await User.findOne({ where: { email: email } });
+  if (isExisting) {
+    return next(
+      new ErrorHandler(alreadyExistUser.message, alreadyExistUser.code),
+    );
+  }
+  const passwordValidate = await validatePassword(password);
+  if (!passwordValidate) {
+    return next(
+      new ErrorHandler(
+        invalidPasswordFormat.message,
+        invalidPasswordFormat.code,
+      ),
+    );
+  }
+  const user = await User.create({
+    email: email,
+    first_name: first_name,
+    last_name: last_name,
+    password: hash,
+    role: "buyer",
+    isVerified: false,
+  });
 
-    const values = [id, first_name, last_name, email, hash, "buyer", false];
+  const verifyToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = await bcrypt.hash(verifyToken, 10);
+  const expiresAt = new Date(Date.now() + ms("15 min"))
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " ");
 
-    mysql.query(createUser, [values], (err) => {
-      if (err) {
-        return next(new ErrorHandler(err.message, 500));
-      }
-      mysql.query(findUserById, [id], async (err, data) => {
-        if (err) return next(new ErrorHandler(err.message, 500));
-        if (data.length) {
-          const verifyToken = crypto.randomBytes(32).toString("hex");
-          const hash = await bcrypt.hash(verifyToken, 10);
-          const id = crypto.randomUUID();
-
-          //TODO: move this to a seperate function
-
-          const expiresAt = new Date(Date.now() + ms("15 min"))
-            .toISOString()
-            .slice(0, 19)
-            .replace("T", " ");
-          const values = [id, data[0].id, hash, "verify_email", expiresAt];
-          mysql.query(createToken, [values], async (err) => {
-            if (err) {
-              throw new Error(err.message);
-            }
-
-            const link = `${url.client}/email-verification?uid=${data[0].id}&verifyToken=${verifyToken}`;
-            const body = `Your email Verification Token is :-\n\n ${link} (This is only available for 15 Minutes!)\n\nif you have not requested this email  then, please Ignore it`;
-            await sendEmail({
-              email: `${data[0].first_name} <${data[0].email}>`,
-              subject: "Veritfy Account",
-              html: body,
-            })
-              .then(() => {
-                return res.status(201).json({
-                  success: true,
-                  message: "User created Successfully",
-                  user: data[0],
-                });
-              })
-              .catch((err) => {
-                return next(new ErrorHandler(err.message, 500));
-              });
-          });
-        }
-      });
-    });
+  await Token.create({
+    userId: user.id,
+    token: tokenHash,
+    type: "verify_email",
+    expiresAt: expiresAt,
+  });
+  const link = `${url.client}/email-verification?uid=${user.id}&verifyToken=${verifyToken}`;
+  const body = `Your email Verification Token is :-\n\n ${link} (This is only available for 15 Minutes!)\n\nif you have not requested this email  then, please Ignore it`;
+  await sendEmail({
+    email: `${user.first_name} <${user.email}>`,
+    subject: "Veritfy Account",
+    html: body,
+  });
+  return res.status(201).json({
+    success: true,
+    message: "User created Successfully",
+    user,
   });
 });
 
 exports.login = catchAsyncErrors(async (req, res, next) => {
   const { email } = req.body;
-  mysql.query(findUserByEmail, [email], async (err, data) => {
-    if (err) return next(new ErrorHandler("Database error", 500));
-    if (data.length === 0)
-      return next(new ErrorHandler("email or password is incorrect", 400));
 
-    const isPasswordCorrect = bcrypt.compareSync(
-      req.body.password,
-      data[0].password,
-    );
+  // Use the 'attributes' option to select specific fields
+  const withPassword = await User.findOne({
+    where: { email: email },
+    attributes: ["password"],
+  });
+  if (!withPassword)
+    return next(new ErrorHandler("Email or password is incorrect", 400));
 
-    if (!isPasswordCorrect)
-      return next(new ErrorHandler("email or password is incorrect ", 400));
+  const isPasswordCorrect = bcrypt.compareSync(
+    req.body.password,
+    withPassword.password,
+  );
 
-    const { refreshToken, accessToken } = await generateAuthToken(
-      data[0].id,
-      data[0].role,
-      data[0].isVerified,
-    );
-
-    // eslint-disable-next-line no-unused-vars
-    const { password, ...other } = data[0];
-    const expires = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
-    res.cookie("refresh", refreshToken, {
-      expires,
-      httpOnly: true,
-    });
-    return res.status(200).json({
-      success: true,
-      message: "User logged Successfully",
-      user: other,
-      token: accessToken,
-    });
+  if (!isPasswordCorrect)
+    return next(new ErrorHandler("Email or password is incorrect", 400));
+  const user = await User.findOne({
+    where: { email: email },
+  });
+  const { refreshToken, accessToken } = await generateAuthToken(
+    user.id,
+    user.role,
+    user.isVerified,
+  );
+  const expires = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
+  res.cookie("refresh", refreshToken, {
+    expires,
+    httpOnly: true,
+  });
+  return res.status(200).json({
+    success: true,
+    message: "User logged successfully",
+    user,
+    token: accessToken,
   });
 });
 
@@ -146,47 +123,34 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
   const { refresh } = req.cookies;
   const decoded = jwt.verify(refresh, jwt_secret);
   const { refreshToken, userId } = decoded;
-  mysql.query(findUserById, [userId], async (err, data) => {
-    if (err) return next(new ErrorHandler(err.message, 500));
-    if (!data.length)
-      return next(new ErrorHandler(userNotFound.message, userNotFound.code));
-    mysql.query(
-      findToken,
-      [data[0].id, "refresh_token"],
-      async (err, token) => {
-        if (err) return next(new ErrorHandler(err.message, 500));
-        if (!token.length) {
-          return next(
-            new ErrorHandler(tokenNotFound.message, tokenNotFound.code),
-          );
-        } else {
-          let tokenExists = false;
-          for (const Rtoken of token) {
-            const isValid = await bcrypt.compare(refreshToken, Rtoken.token);
-            if (isValid) {
-              tokenExists = true;
-              mysql.query(
-                deleteTokenOne,
-                [data[0].id, "refresh_token", Rtoken.id],
-                (err) => {
-                  if (err) return next(new ErrorHandler(err.message, 500));
-                },
-              );
+  const user = await User.findOne({ where: { id: userId } });
+  if (!user) {
+    return next(new ErrorHandler(userNotFound.message, userNotFound.code));
+  }
 
-              break;
-            }
-          }
-          if (!tokenExists) {
-            new ErrorHandler(tokenNotFound.message, tokenNotFound.code);
-          }
-          res.clearCookie("refresh");
-          return res.status(200).json({
-            success: true,
-            message: "User Logged out successfully",
-          });
-        }
-      },
-    );
+  const token = await Token.findAll({
+    where: { userId, type: "refresh_token" },
+  });
+  if (!token.length) {
+    return next(new ErrorHandler(tokenNotFound.message, tokenNotFound.code));
+  }
+  let tokenExists = false;
+  for (const Rtoken of token) {
+    const isValid = await bcrypt.compare(refreshToken, Rtoken.token);
+    if (isValid) {
+      tokenExists = true;
+      await Rtoken.destroy();
+
+      break;
+    }
+  }
+  if (!tokenExists) {
+    new ErrorHandler(tokenNotFound.message, tokenNotFound.code);
+  }
+  res.clearCookie("refresh");
+  return res.status(200).json({
+    success: true,
+    message: "User Logged out successfully",
   });
 });
 
@@ -197,76 +161,64 @@ exports.refreshToken = catchAsyncErrors(async (req, res, next) => {
   let { refreshToken } = decoded;
   const { userId } = decoded;
 
-  mysql.query(findUserById, [userId], async (err, data) => {
-    if (err) return next(new ErrorHandler(err.message, 500));
-    if (!data.length) {
-      return next(new ErrorHandler(userNotFound.message, userNotFound.code));
+  const user = await User.findOne({ where: { id: userId } });
+
+  if (!user) {
+    return next(new ErrorHandler(userNotFound.message, userNotFound.code));
+  }
+  const token = await Token.findAll({
+    where: { userId, type: "refresh_token" },
+  });
+  if (!token.length) {
+    return next(new ErrorHandler(tokenNotFound.message, tokenNotFound.code));
+  }
+  let tokenExists = false;
+  for (const Rtoken of token) {
+    const isValid = await bcrypt.compare(refreshToken, Rtoken.token);
+    if (isValid) {
+      tokenExists = true;
+      await Rtoken.destroy();
+
+      break;
     }
-    mysql.query(findToken, [userId, "refresh_token"], async (err, token) => {
-      if (err) return next(new ErrorHandler(err.message));
-      if (!token.length) {
-        return next(
-          new ErrorHandler(tokenNotFound.message, tokenNotFound.code),
-        );
-      }
-      let tokenExists = false;
-      for (const Rtoken of token) {
-        const isValid = await bcrypt.compare(refreshToken, Rtoken.token);
-        if (isValid) {
-          tokenExists = true;
-          mysql.query(
-            deleteTokenOne,
-            [data[0].id, "refresh_token", Rtoken.id],
-            (err) => {
-              if (err) return next(new ErrorHandler(err.message, 500));
-            },
-          );
+  }
+  if (!tokenExists) {
+    new ErrorHandler(tokenNotFound.message, tokenNotFound.code);
+  }
+  const accessToken = jwt.sign(
+    {
+      id: userId,
+      role: user.role,
+      isVerified: user.isVerified,
+    },
+    jwt_secret,
+    { expiresIn: "30 min" },
+  );
+  refreshToken = crypto.randomBytes(32).toString("hex");
+  const hash = await bcrypt.hash(refreshToken, 10);
 
-          break;
-        }
-      }
-      if (!tokenExists) {
-        new ErrorHandler(tokenNotFound.message, tokenNotFound.code);
-      }
-      const accessToken = jwt.sign(
-        {
-          id: userId,
-          role: data[0].role,
-          isVerified: data[0].isVerified,
-        },
-        jwt_secret,
-        { expiresIn: "30 min" },
-      );
-      refreshToken = crypto.randomBytes(32).toString("hex");
-      const hash = await bcrypt.hash(refreshToken, 10);
-
-      const refreshTokenJWTNew = jwt.sign(
-        { userId, refreshToken },
-        jwt_secret,
-        {
-          expiresIn: "1 day",
-        },
-      );
-      const id = crypto.randomUUID();
-      const expiresAt = new Date(Date.now() + ms("1 min"))
-        .toISOString()
-        .slice(0, 19)
-        .replace("T", " ");
-      const values = [id, userId, hash, "refresh_token", expiresAt];
-      mysql.query(createToken, [values], (err) => {
-        if (err) return next(new ErrorHandler(err.message, 500));
-        const expires = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
-        res.cookie("refresh", refreshTokenJWTNew, {
-          expires,
-          httpOnly: true,
-        });
-        return res.status(200).json({
-          success: true,
-          message: "New Accesstoken",
-          token: accessToken,
-        });
-      });
-    });
+  const refreshTokenJWTNew = jwt.sign({ userId, refreshToken }, jwt_secret, {
+    expiresIn: "1 day",
+  });
+  const expiresAt = new Date(Date.now() + ms("1 min"))
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " ");
+  await Token.create({
+    userId: user.id,
+    token: hash,
+    type: "refresh_token",
+    expiresAt: expiresAt,
+  });
+  const expires = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
+  res.cookie("refresh", refreshTokenJWTNew, {
+    expires,
+    httpOnly: true,
+  });
+  return res.status(200).json({
+    success: true,
+    message: "New Access Token",
+    token: accessToken,
   });
 });
 
@@ -275,60 +227,43 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
   if (!userId || !verifyToken) {
     return next(new ErrorHandler(requiredField.message, requiredField.code));
   }
+  const user = await User.findOne({ where: { id: userId } });
 
-  mysql.query(findUserById, [userId], async (err, data) => {
-    if (err) return next(new ErrorHandler(err.message, 500));
-    if (!data.length) {
-      return next(new ErrorHandler(userNotFound.message, userNotFound.code));
-    }
-    if (data[0].isVerified) {
-      return next(
-        new ErrorHandler(
-          alreadyVerifiedEmail.message,
-          alreadyVerifiedEmail.code,
-        ),
-      );
-    }
-    mysql.query(findToken, [data[0].id, "verify_email"], async (err, token) => {
-      if (err) return next(new ErrorHandler(err.message, 500));
-      if (!token.length) {
-        return next(
-          new ErrorHandler(tokenNotFound.message, tokenNotFound.code),
-        );
-      }
-      const isValid = await bcrypt.compare(verifyToken, token[0].token);
-      if (!isValid) {
-        return next(
-          new ErrorHandler(tokenNotFound.message, tokenNotFound.code),
-        );
-      }
-      console.log(Date.now(), new Date(token[0].expiresAt).getTime());
-      // if (Date.now() > new Date(token[0].expiresAt).getTime()) {
-      //     return next(
-      //         new ErrorHandler(tokenNotFound.message, tokenNotFound.code)
-      //     );
-      // }
-
-      mysql.query(updateUserVerification, [1, data[0].id], async (err) => {
-        if (err) {
-          return next(new ErrorHandler(err.message, 500));
-        }
-        await sendEmail({
-          email: `${data[0].first_name} <${data[0].email}>`,
-          subject: "Account Verified Succefully",
-          html: "Your account has be verified successfully",
-        })
-          .then(() => {
-            return res.status(200).json({
-              success: true,
-              message: "Email Verified Successfully",
-            });
-          })
-          .catch((err) => {
-            return next(new ErrorHandler(err.message, 500));
-          });
-      });
-    });
+  if (!user) {
+    return next(new ErrorHandler(userNotFound.message, userNotFound.code));
+  }
+  if (user.isVerified) {
+    return next(
+      new ErrorHandler(alreadyVerifiedEmail.message, alreadyVerifiedEmail.code),
+    );
+  }
+  const token = await Token.findOne({
+    where: {
+      userId: userId,
+      type: "verify_email",
+      expiresAt: {
+        [Op.gte]: literal("NOW()"),
+      },
+    },
+  });
+  if (!token) {
+    return next(new ErrorHandler(tokenNotFound.message, tokenNotFound.code));
+  }
+  const isValid = await bcrypt.compare(verifyToken, token.token);
+  if (!isValid) {
+    return next(new ErrorHandler(tokenNotFound.message, tokenNotFound.code));
+  }
+  await user.update({ isVerified: true });
+  await sendEmail({
+    email: `${user.first_name} <${user.email}>`,
+    subject: "Account Verified Succefully",
+    html: "Your account has be verified successfully",
+  }).catch((err) => {
+    return next(new ErrorHandler(err.message, 500));
+  });
+  return res.status(200).json({
+    success: true,
+    message: "Email Verified Successfully",
   });
 });
 
@@ -337,55 +272,45 @@ exports.requestEmailVerification = catchAsyncErrors(async (req, res, next) => {
   if (!email) {
     return next(new ErrorHandler(requiredField.message, requiredField.code));
   }
-  mysql.query(findUserByEmail, [email], async (err, data) => {
-    if (err) return { error: err };
-    if (!data.length) {
-      return next(new ErrorHandler(userNotFound.message, userNotFound.code));
-    }
-    if (data[0].isVerified) {
-      return next(
-        new ErrorHandler(
-          alreadyVerifiedEmail.message,
-          alreadyVerifiedEmail.code,
-        ),
-      );
-    }
-    mysql.query(findToken, [data[0].id, "verify_email"], async (err, token) => {
-      if (err) {
-        return next(new ErrorHandler(err.message, 500));
-      }
-      if (token.length) {
-        mysql.query(deleteToken, [data[0].id, "verify_email"], (err) => {
-          if (err) return next(new ErrorHandler(err.message, 500));
-        });
-      }
-      const verifyToken = crypto.randomBytes(32).toString("hex");
-      const hash = await bcrypt.hash(verifyToken, 10);
-      const id = crypto.randomUUID();
-      const expiresAt = new Date(Date.now() + ms("1 min"))
-        .toISOString()
-        .slice(0, 19)
-        .replace("T", " ");
-      const values = [id, data[0].id, hash, "verify_email", expiresAt];
-      mysql.query(createToken, [values], async (err) => {
-        if (err) {
-          return next(new ErrorHandler(err.message, 500));
-        } else {
-          const link = `${url.clientl}/email-verification?uid=${data[0].id}&verifyToken=${verifyToken}`;
-          const body = `Your email Verification Token is :-\n\n ${link} (This is only available for 15 Minutes!)\n\nif you have not requested this email  then, please Ignore it`;
-          await sendEmail({
-            email: `${data[0].first_name} <${data[0].email}>`,
-            subject: "Veritfy Account",
-            html: body,
-          }).then(() => {
-            return res.status(200).json({
-              success: true,
-              message: "Email Verification token sent",
-            });
-          });
-        }
-      });
-    });
+  const user = await User.findOne({ where: { email: email } });
+
+  if (!user) {
+    return next(new ErrorHandler(userNotFound.message, userNotFound.code));
+  }
+  if (user.isVerified) {
+    return next(
+      new ErrorHandler(alreadyVerifiedEmail.message, alreadyVerifiedEmail.code),
+    );
+  }
+  const token = await Token.findOne({
+    where: {
+      userId: user.id,
+      type: "verify_email",
+    },
+  });
+  if (token) {
+    await token.destroy();
+  }
+  const verifyToken = crypto.randomBytes(32).toString("hex");
+  const hash = await bcrypt.hash(verifyToken, 10);
+  const expiresAt = new Date();
+  expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+  await Token.create({
+    userId: user.id,
+    token: hash,
+    type: "verify_email",
+    expiresAt: expiresAt,
+  });
+  const link = `${url.clientl}/email-verification?uid=${user.id}&verifyToken=${verifyToken}`;
+  const body = `Your email Verification Token is :-\n\n ${link} (This is only available for 15 Minutes!)\n\nif you have not requested this email  then, please Ignore it`;
+  await sendEmail({
+    email: `${user.first_name} <${user.email}>`,
+    subject: "Veritfy Account",
+    html: body,
+  });
+  return res.status(200).json({
+    success: true,
+    message: "Email Verification token sent",
   });
 });
 
@@ -394,51 +319,41 @@ exports.requestPasswordReset = catchAsyncErrors(async (req, res, next) => {
   if (!email) {
     return next(new ErrorHandler(requiredField.message, requiredField.code));
   }
-  mysql.query(findUserByEmail, [email], async (err, data) => {
-    if (err) return next(new ErrorHandler(err.message, 500));
-    if (!data.length) {
-      return next(new ErrorHandler(userNotFound.message, userNotFound.code));
-    }
-    mysql.query(
-      findToken,
-      [data[0].id, "reset_password"],
-      async (err, token) => {
-        if (err) return next(new ErrorHandler(err.message, 500));
+  const user = await User.findOne({ where: { email: email } });
 
-        if (token.length) {
-          mysql.query(deleteToken, [data[0].id, "reset_password"], (err) => {
-            if (err) return next(new ErrorHandler(err.message, 500));
-          });
-        }
-        const resetToken = crypto.randomBytes(32).toString("hex");
-        const hash = await bcrypt.hash(resetToken, 10);
-        const id = crypto.randomUUID();
-        const expiresAt = new Date(Date.now() + ms("15 min"))
-          .toISOString()
-          .slice(0, 19)
-          .replace("T", " ");
-        const values = [id, data[0].id, hash, "reset_password", expiresAt];
-        mysql.query(createToken, [values], async (err) => {
-          if (err) return next(new ErrorHandler(err.message, 500));
-          const link = `${url.client}/auth/reset-password/${data[0].id}/${resetToken}`;
-          const body = `Your password reset Token is :-\n\n ${link} (This is only available for 15 Minutes!)\n\nif you have not requested this email  then, please Ignore it`;
-          await sendEmail({
-            email: `${data[0].first_name} <${data[0].email}>`,
-            subject: "Reset Password",
-            html: body,
-          })
-            .then(() => {
-              return res.status(200).json({
-                success: true,
-                message: "Password reset token sent",
-              });
-            })
-            .catch((err) => {
-              return next(new ErrorHandler(err.message, 500));
-            });
-        });
-      },
-    );
+  if (!user) {
+    return next(new ErrorHandler(userNotFound.message, userNotFound.code));
+  }
+  const token = await Token.findOne({
+    where: {
+      userId: user.id,
+      type: "reset_password",
+    },
+  });
+  if (token) {
+    await token.destroy();
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const hash = await bcrypt.hash(resetToken, 10);
+  const expiresAt = new Date();
+  expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+  await Token.create({
+    userId: user.id,
+    token: hash,
+    type: "reset_password",
+    expiresAt: expiresAt,
+  });
+  const link = `${url.client}/auth/reset-password/${user.id}/${resetToken}`;
+  const body = `Your password reset Token is :-\n\n ${link} (This is only available for 15 Minutes!)\n\nif you have not requested this email  then, please Ignore it`;
+  await sendEmail({
+    email: `${user.first_name} <${user.email}>`,
+    subject: "Reset Password",
+    html: body,
+  });
+  return res.status(200).json({
+    success: true,
+    message: "Password reset token sent",
   });
 });
 
@@ -462,53 +377,55 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  mysql.query(findUserById, [userId], async (err, data) => {
-    if (err) return next(new ErrorHandler(err.message, 500));
-    if (!data.length) {
-      return next(new ErrorHandler(userNotFound.message, userNotFound.code));
-    }
-    mysql.query(findToken, [userId, "reset_password"], async (err, token) => {
-      if (err) return next(new ErrorHandler(err.message, 500));
-      if (!token.length) {
-        return next(
-          new ErrorHandler(tokenNotFound.message, tokenNotFound.code),
-        );
-      }
-      const isValid = await bcrypt.compare(resetToken, token[0].token);
-      if (!isValid) {
-        return next(
-          new ErrorHandler(tokenNotFound.message, tokenNotFound.code),
-        );
-      }
-      const salt = bcrypt.genSaltSync(10);
-      const hash = bcrypt.hashSync(newPassword, salt);
-      mysql.query(updateUserPassword, [hash, userId], async (err) => {
-        if (err) return next(new ErrorHandler(err.message, 500));
-        mysql.query(deleteToken, [userId, "reset_password"], (err) => {
-          if (err) return next(new ErrorHandler(err.message, 500));
-        });
-        await sendEmail({
-          email: `${data[0].first_name} <${data[0].email}>`,
-          subject: "Password Updated Successfully",
-          html: "Your password has been updated successfully",
-        })
-          .then(() => {
-            return res.status(200).json({
-              success: true,
-              message: "Password updated successfully",
-            });
-          })
-          .catch((err) => {
-            return next(new ErrorHandler(err.message, 500));
-          });
-      });
-    });
+  const user = await User.findOne({ where: { id: userId } });
+  if (!user) {
+    return next(
+      new ErrorHandler(alreadyExistUser.message, alreadyExistUser.code),
+    );
+  }
+  const token = await Token.findOne({
+    where: {
+      userId: userId,
+      type: "reset_password",
+      expiresAt: {
+        [Op.gte]: literal("NOW()"),
+      },
+    },
+  });
+  if (!token) {
+    return next(new ErrorHandler(tokenNotFound.message, tokenNotFound.code));
+  }
+
+  const isValid = await bcrypt.compare(resetToken, token.token);
+  if (!isValid) {
+    return next(new ErrorHandler(tokenNotFound.message, tokenNotFound.code));
+  }
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(newPassword, salt);
+
+  await User.update(
+    { password: hash },
+    {
+      where: { id: userId },
+    },
+  );
+  await token.destroy();
+  await sendEmail({
+    email: `${user.first_name} <${user.email}>`,
+    subject: "Password Updated Successfully",
+    html: "Your password has been updated successfully",
+  }).catch((err) => {
+    return next(new ErrorHandler(err.message, 500));
+  });
+  return res.status(200).json({
+    success: true,
+    message: "Password updated successfully",
   });
 });
 
 exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;
-  const { id, email } = req.user;
+  const { id } = req.user;
   if (!id || !oldPassword || !newPassword || !confirmPassword) {
     return next(new ErrorHandler(requiredField.message, requiredField.code));
   }
@@ -528,25 +445,29 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
       ),
     );
   }
-  mysql.query(findUserWithPassword, [email], (err, data) => {
-    if (err) return next(new ErrorHandler("Database error", 500));
-    if (data.length === 0)
-      return next(new ErrorHandler(userNotFound.message, userNotFound.code));
 
-    const isPasswordCorrect = bcrypt.compareSync(oldPassword, data[0].password);
+  const user = await User.findOne({
+    where: { id: id },
+    attributes: ["password"],
+  });
+  if (!user)
+    return next(new ErrorHandler("Email or password is incorrect", 400));
+  const isPasswordCorrect = bcrypt.compareSync(oldPassword, user.password);
 
-    if (!isPasswordCorrect) {
-      return next(new ErrorHandler("Incorrect Password", 400));
-    }
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(newPassword, salt);
-    mysql.query(updateUserPassword, [hash, id], (err) => {
-      if (err) return next(new ErrorHandler(err.message, 500));
-      return res.status(200).json({
-        success: true,
-        message: "Password updated successfully",
-      });
-    });
+  if (!isPasswordCorrect) {
+    return next(new ErrorHandler("Incorrect Password", 400));
+  }
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(newPassword, salt);
+  await User.update(
+    { password: hash },
+    {
+      where: { id: id },
+    },
+  );
+  return res.status(200).json({
+    success: true,
+    message: "Password updated successfully",
   });
 });
 
@@ -566,10 +487,11 @@ const generateAuthToken = async (userId, role, isVerified) => {
     .toISOString()
     .slice(0, 19)
     .replace("T", " ");
-  const id = crypto.randomUUID();
-  const values = [id, userId, hash, "refresh_token", expiresAt];
-  mysql.query(createToken, [values], (err) => {
-    if (err) throw new Error("Error creating tokens");
+  Token.create({
+    userId: userId,
+    token: hash,
+    type: "refresh_token",
+    expiresAt: expiresAt,
   });
   return { accessToken, refreshToken: refreshTokenJWT };
 };
