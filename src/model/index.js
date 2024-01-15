@@ -42,7 +42,7 @@ db.address = require("./address.model")(sequelize, DataTypes);
 db.category = require("./caregory.model")(sequelize, DataTypes);
 db.cart = require("./cart.model")(sequelize, DataTypes);
 db.order = require("./order.model")(sequelize, DataTypes);
-db.stock = require("./stock.model")(sequelize, DataTypes);
+db.inventory = require("./inventory.model")(sequelize, DataTypes);
 db.token = require("./token.model")(sequelize, DataTypes);
 db.transaction = require("./transaction.model")(sequelize, DataTypes);
 

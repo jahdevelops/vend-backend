@@ -48,3 +48,28 @@ exports.approveNewSeller = catchAsyncErrors(async (req, res, next) => {
     message: "User updated successfully",
   });
 });
+exports.getAllSellers = catchAsyncErrors(async (req, res, next) => {
+  const { page = 1, sortBy = "createdAt", sortOrder = "desc" } = req.query;
+  const pageSize = 10;
+  const offset = (page - 1) * pageSize;
+  const validSortOrders = ["asc", "desc"];
+  const sort = validSortOrders.includes(sortOrder) ? sortOrder : "asc";
+  const users = await User.findAndCountAll(
+    { where: { role: "seller" } },
+    {
+      order: [[sortBy, sort]],
+      limit: pageSize,
+      offset: offset,
+    },
+  );
+  const response = {
+    success: true,
+    totalSellers: users.count,
+    message: "All Sellers",
+    sellers: users.rows,
+    currentPage: page,
+    totalPages: Math.ceil(users.count / pageSize),
+  };
+
+  return res.status(200).json(response);
+});

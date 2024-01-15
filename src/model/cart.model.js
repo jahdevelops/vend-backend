@@ -1,6 +1,5 @@
 /* eslint-disable no-dupe-keys */
 /* eslint-disable no-unused-vars */
-// migrations/xxxxxx-create-carts.js
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {

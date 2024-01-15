@@ -5,7 +5,7 @@ const {
   updateProduct,
   getProduct,
   deleteProduct,
-} = require("../../controller/seller/product.controller");
+} = require("../../controller/seller/Product/product.controller");
 const router = express.Router();
 const upload = require("../../utils/multer");
 
