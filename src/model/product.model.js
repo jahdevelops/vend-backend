@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: DataTypes.UUID,
     brandId: DataTypes.UUID,
     categoryId: DataTypes.UUID,
-    stockId: DataTypes.UUID,
+    inventory: DataTypes.STRING,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
     userId: {
@@ -45,15 +45,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       references: {
         model: "categories",
-        key: "id",
-      },
-      onUpdate: "CASCADE",
-      onDelete: "CASCADE",
-    },
-    stockId: {
-      type: DataTypes.UUID,
-      references: {
-        model: "stocks",
         key: "id",
       },
       onUpdate: "CASCADE",

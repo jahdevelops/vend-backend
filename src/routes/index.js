@@ -4,6 +4,7 @@ const user = require("./user.route");
 const seller = require("./Seller");
 const admin = require("./Admin");
 const product = require("./Product");
+const order = require("./Order");
 const {
   isAuthenticatedUser,
   checkVerified,
@@ -22,6 +23,7 @@ router.use(
   admin,
 );
 router.use("/api/v1/product", product);
+router.use("/api/v1/order", isAuthenticatedUser, checkVerified, order);
 router.get("/", (req, res) => {
   return res
     .status(200)

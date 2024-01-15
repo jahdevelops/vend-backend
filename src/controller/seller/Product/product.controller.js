@@ -2,15 +2,15 @@
 const {
   requiredField,
   productNotFound,
-} = require("../../messages/error.messages");
-const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
-const ErrorHandler = require("../../utils/errorHandler");
+} = require("../../../messages/error.messages");
+const catchAsyncErrors = require("../../../middlewares/catchAsyncErrors");
+const ErrorHandler = require("../../../utils/errorHandler");
 const cloudinary = require("cloudinary");
 const crypto = require("crypto");
-const db = require("../../model");
+const db = require("../../../model");
 const Product = db.product;
-const Stock = db.stock;
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
+  console.log(req.body);
   const {
     name,
     price,
@@ -19,7 +19,6 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     specifications,
     brandId,
     categoryId,
-    stock,
   } = req.body;
   const { id } = req.user;
   if (
@@ -29,7 +28,6 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     !product_details ||
     !specifications ||
     !brandId ||
-    !stock ||
     !categoryId ||
     !req.files.main_image ||
     !req.files.sub_image_1 ||
@@ -97,12 +95,8 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     brandId: brandId,
     categoryId: categoryId,
   });
-  const stockId = await Stock.create({
-    productId: product.id,
-    quantity: Number(stock),
-  });
-
-  await Product.update({ stockId: stockId.id }, { where: { id: product.id } });
+  await product.update({ inventory: product.id });
+  await product.save();
   return res.status(201).json({
     success: true,
     message: "Product created successfully",
