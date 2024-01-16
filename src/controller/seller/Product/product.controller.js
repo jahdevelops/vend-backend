@@ -47,6 +47,8 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     timestamp: timestamp,
   };
 
+  //TODO: Uncomment this out on production
+
   const product = await Product.create({
     name: name,
     price: price,
@@ -95,6 +97,25 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     brandId: brandId,
     categoryId: categoryId,
   });
+
+  // const product = await Product.create({
+  //   name: name,
+  //   price: price,
+  //   main_image: "https://google.com",
+  //   sub_images: [
+  //     "https://google.com",
+  //     "https://google.com",
+  //     "https://google.com",
+  //     "https://google.com",
+  //     "https://google.com",
+  //   ],
+  //   description: description,
+  //   product_details: product_details,
+  //   specifications: specifications,
+  //   userId: id,
+  //   brandId: brandId,
+  //   categoryId: categoryId,
+  // });
   await product.update({ inventory: product.id });
   await product.save();
   return res.status(201).json({

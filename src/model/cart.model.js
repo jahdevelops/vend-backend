@@ -10,9 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
     },
     userId: DataTypes.UUID,
-    products: DataTypes.JSON,
-    quantities: DataTypes.JSON,
-    prices: DataTypes.JSON,
+    productId: DataTypes.UUID,
+    quantity: DataTypes.FLOAT,
+    prices: DataTypes.FLOAT,
+    inventoryId: DataTypes.UUID,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
     userId: {
