@@ -120,7 +120,7 @@ exports.editCart = catchAsyncErrors(async (req, res, next) => {
   await existingCart.save();
   return res.status(200).json({
     success: true,
-    message: "Product added successfully",
+    message: "Cart Updated successfully",
     cart: existingCart,
   });
 });

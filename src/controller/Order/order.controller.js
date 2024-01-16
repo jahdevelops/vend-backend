@@ -23,7 +23,7 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
       return next(
         new ErrorHandler(
           `The product with id:${product.productId} is not found`,
-          400,
+          404,
         ),
       );
     }
