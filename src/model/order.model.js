@@ -1,4 +1,3 @@
-/* eslint-disable no-dupe-keys */
 /* eslint-disable no-unused-vars */
 // migrations/xxxxxx-create-orders.js
 "use strict";
@@ -14,36 +13,20 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       type: DataTypes.ENUM("pending", "processing", "shipped", "delivered"),
     },
-    totalAmount: DataTypes.INTEGER,
     paymentMethod: {
       type: DataTypes.ENUM("card", "on_delievery"),
     },
-    transactionId: DataTypes.UUID,
+
+    carts: DataTypes.JSON,
     addressId: DataTypes.UUID,
-    taxAmount: DataTypes.INTEGER,
+    transactionId: DataTypes.UUID,
+    productsAmount: DataTypes.INTEGER,
     delieveryAmount: DataTypes.INTEGER,
-    delivery_notes: DataTypes.TEXT,
+    taxAmount: DataTypes.INTEGER,
+    totalAmount: DataTypes.INTEGER,
+    deliveryNote: DataTypes.TEXT,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
-    // Foreign Keys
-    userId: {
-      type: DataTypes.UUID,
-      references: {
-        model: "users",
-        key: "id",
-      },
-      onUpdate: "CASCADE",
-      onDelete: "CASCADE",
-    },
-    transactionId: {
-      type: DataTypes.UUID,
-      references: {
-        model: "transactions",
-        key: "id",
-      },
-      onUpdate: "CASCADE",
-      onDelete: "CASCADE",
-    },
   });
   return Order;
 };

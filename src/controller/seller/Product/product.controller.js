@@ -47,46 +47,67 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
     timestamp: timestamp,
   };
 
+  //TODO: Uncomment this out on production
+
+  // const product = await Product.create({
+  //   name: name,
+  //   price: price,
+  //   main_image: (
+  //     await cloudinary.v2.uploader.upload(req.files.main_image[0].path, {
+  //       ...cloudinaryOptions,
+  //       public_id: `${name}_${id}_mainImage_${Date.now()}`,
+  //     })
+  //   ).url,
+  //   sub_images: [
+  //     (
+  //       await cloudinary.v2.uploader.upload(req.files.sub_image_1[0].path, {
+  //         ...cloudinaryOptions,
+  //         public_id: `${name}_${id}_subImage1_${Date.now()}`,
+  //       })
+  //     ).url,
+  //     (
+  //       await cloudinary.v2.uploader.upload(req.files.sub_image_2[0].path, {
+  //         ...cloudinaryOptions,
+  //         public_id: `${name}_${id}_subImage2_${Date.now()}`,
+  //       })
+  //     ).url,
+  //     (
+  //       await cloudinary.v2.uploader.upload(req.files.sub_image_3[0].path, {
+  //         ...cloudinaryOptions,
+  //         public_id: `${name}_${id}_subImage3_${Date.now()}`,
+  //       })
+  //     ).url,
+  //     (
+  //       await cloudinary.v2.uploader.upload(req.files.sub_image_4[0].path, {
+  //         ...cloudinaryOptions,
+  //         public_id: `${name}_${id}_subImage4_${Date.now()}`,
+  //       })
+  //     ).url,
+  //     (
+  //       await cloudinary.v2.uploader.upload(req.files.sub_image_5[0].path, {
+  //         ...cloudinaryOptions,
+  //         public_id: `${name}_${id}_subImage5_${Date.now()}`,
+  //       })
+  //     ).url,
+  //   ],
+  //   description: description,
+  //   product_details: product_details,
+  //   specifications: specifications,
+  //   userId: id,
+  //   brandId: brandId,
+  //   categoryId: categoryId,
+  // });
+
   const product = await Product.create({
     name: name,
     price: price,
-    main_image: (
-      await cloudinary.v2.uploader.upload(req.files.main_image[0].path, {
-        ...cloudinaryOptions,
-        public_id: `${name}_${id}_mainImage_${Date.now()}`,
-      })
-    ).url,
+    main_image: "https://google.com",
     sub_images: [
-      (
-        await cloudinary.v2.uploader.upload(req.files.sub_image_1[0].path, {
-          ...cloudinaryOptions,
-          public_id: `${name}_${id}_subImage1_${Date.now()}`,
-        })
-      ).url,
-      (
-        await cloudinary.v2.uploader.upload(req.files.sub_image_2[0].path, {
-          ...cloudinaryOptions,
-          public_id: `${name}_${id}_subImage2_${Date.now()}`,
-        })
-      ).url,
-      (
-        await cloudinary.v2.uploader.upload(req.files.sub_image_3[0].path, {
-          ...cloudinaryOptions,
-          public_id: `${name}_${id}_subImage3_${Date.now()}`,
-        })
-      ).url,
-      (
-        await cloudinary.v2.uploader.upload(req.files.sub_image_4[0].path, {
-          ...cloudinaryOptions,
-          public_id: `${name}_${id}_subImage4_${Date.now()}`,
-        })
-      ).url,
-      (
-        await cloudinary.v2.uploader.upload(req.files.sub_image_5[0].path, {
-          ...cloudinaryOptions,
-          public_id: `${name}_${id}_subImage5_${Date.now()}`,
-        })
-      ).url,
+      "https://google.com",
+      "https://google.com",
+      "https://google.com",
+      "https://google.com",
+      "https://google.com",
     ],
     description: description,
     product_details: product_details,

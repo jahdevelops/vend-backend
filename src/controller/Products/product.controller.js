@@ -5,17 +5,18 @@ const ErrorHandler = require("../../utils/errorHandler");
 const db = require("../../model");
 const Product = db.product;
 exports.indexProducts = catchAsyncErrors(async (req, res, next) => {
-  const { page = 1, sortBy = "createdAt", sortOrder = "desc" } = req.query;
+  const { page = 1 } = req.query;
   const pageSize = 10;
   const offset = (page - 1) * pageSize;
-  const validSortOrders = ["asc", "desc"];
-  const sort = validSortOrders.includes(sortOrder) ? sortOrder : "asc";
+
+  const order = [db.sequelize.literal("RAND()")];
 
   const products = await Product.findAndCountAll({
-    order: [[sortBy, sort]],
+    order: order,
     limit: pageSize,
     offset: offset,
   });
+
   const response = {
     success: true,
     message: "Products",

@@ -45,8 +45,9 @@ db.order = require("./order.model")(sequelize, DataTypes);
 db.inventory = require("./inventory.model")(sequelize, DataTypes);
 db.token = require("./token.model")(sequelize, DataTypes);
 db.transaction = require("./transaction.model")(sequelize, DataTypes);
+// db.checkout = require("./checkout.model")(sequelize, DataTypes);
 
-// db.sequelize.sync({ alter: true, force: true }).then(() => {
+// db.sequelize.sync({ alter: false, force: true }).then(() => {
 //     console.log("Re-sync done");
 // });
 

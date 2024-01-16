@@ -4,7 +4,7 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-  const Order = sequelize.define("orders", {
+  const Inventory = sequelize.define("inventories", {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -84,5 +84,5 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
   });
-  return Order;
+  return Inventory;
 };
