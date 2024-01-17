@@ -124,13 +124,22 @@ exports.getAllOrder = catchAsyncErrors(async (req, res, next) => {
   );
   const response = {
     success: true,
-    totalProducts: orders.count,
+    totalOrders: orders.count,
     message: "All orders",
-    products: orders.rows,
+    orders: orders.rows,
     currentPage: page,
     totalPages: Math.ceil(orders.count / pageSize),
   };
   return res.status(200).json(response);
+});
+exports.getOrder = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const order = await Order.findOne({ where: { userId: req.user.id, id: id } });
+  return res.status(200).json({
+    success: true,
+    message: "Order",
+    order,
+  });
 });
 exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
@@ -138,7 +147,6 @@ exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
   if (!order) {
     return next(new ErrorHandler("Order not found", 404));
   }
-
   await order.destroy();
   res.status(204).end();
 });

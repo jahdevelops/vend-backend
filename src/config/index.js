@@ -27,3 +27,7 @@ exports.cloudinaryConfig = {
   key: process.env.cloudinary_apikey,
   secret: process.env.cloudinary_secret,
 };
+
+exports.paystack = {
+  secret: "sk_test_195bfc884f5f8e730607e8030aae6b953b53d2ee",
+};
