@@ -24,6 +24,7 @@ router.use(
 );
 router.use("/api/v1/product", product);
 router.use("/api/v1/order", isAuthenticatedUser, checkVerified, order);
+
 router.get("/", (req, res) => {
   return res
     .status(200)
