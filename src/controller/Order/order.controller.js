@@ -45,7 +45,7 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
     if (Number(product.quantity) > inventory.quantity) {
       return next(
         new ErrorHandler(
-          `This Product${product.productId}  does not have up to this amount in stock`,
+          `This Product ${product.productId}  does not have up to this amount in stock`,
           400,
         ),
       );
@@ -77,6 +77,9 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
             ? 1000
             : productsAmount * 0.09),
   });
+  for (const carts of cart) {
+    await carts.destroy();
+  }
   return res.status(201).json({
     success: true,
     message: "Order created successfully",

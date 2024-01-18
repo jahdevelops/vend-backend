@@ -7,6 +7,7 @@ const Order = db.order;
 const User = db.user;
 const Product = db.product;
 const Inventory = db.inventory;
+const Escrow = db.escrow;
 const https = require("https");
 const axios = require("axios");
 const { paystack } = require("../../config");
@@ -20,14 +21,16 @@ exports.initialize = catchAsyncErrors(async (req, res, next) => {
   if (!order) {
     return next(new ErrorHandler("Order not found", 404));
   }
-  // if (order.transactionId) {
-  //     const transaction = await Transaction.findOne({ where: { id: order.transactionId } });
-  //     if (transaction.status === "successful") {
-  //         return next(
-  //             new ErrorHandler("This Order has already been paid for", 404)
-  //         );
-  //     }
-  // }
+  if (order.transactionId) {
+    const transaction = await Transaction.findOne({
+      where: { id: order.transactionId },
+    });
+    if (transaction.status === "successful") {
+      return next(
+        new ErrorHandler("This Order has already been paid for", 404),
+      );
+    }
+  }
   const user = await User.findOne({ where: { id: order.userId } });
   if (!user) {
     return next(
@@ -101,9 +104,13 @@ exports.post = catchAsyncErrors(async (req, res, next) => {
         await transaction.save();
         const orders = await Order.findOne({ where: { id: order } });
         if (!orders) return next(new ErrorHandler("Order not found", 404));
+
         transaction.amount = orders.totalAmount;
         transaction.transactionType = "sale";
         await transaction.save();
+        const user = await User.findOne({
+          where: { id: orders.userId },
+        });
         let sellers = [];
         for (const product of orders.carts) {
           const inventory = await Inventory.findOne({
@@ -113,6 +120,15 @@ exports.post = catchAsyncErrors(async (req, res, next) => {
           await inventory.save();
           const orderedProduct = await Product.findOne({
             where: { id: inventory.productId },
+          });
+          const sellerInfo = await User.findOne({
+            where: { id: orderedProduct.userId },
+          });
+          await Escrow.create({
+            userId: sellerInfo.id,
+            walletId: sellerInfo.walletId,
+            amount: Number(product.prices),
+            status: "pending",
           });
           // const sellerArray = sellers.find(orderedProduct.userId);
           // if (!sellerArray) {
@@ -124,9 +140,7 @@ exports.post = catchAsyncErrors(async (req, res, next) => {
         orders.transactionId = trnId;
         orders.status = "processing";
         await orders.save();
-        const user = await User.findOne({
-          where: { id: orders.userId },
-        });
+
         await sendEmail({
           email: `${user.first_name} <${user.email}>`,
           subject: "Order Processing",

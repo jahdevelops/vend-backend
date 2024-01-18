@@ -20,6 +20,8 @@ const {
 const User = db.user;
 const Token = db.token;
 const { jwt_secret, url } = require("../config");
+// eslint-disable-next-line no-unused-vars
+const { seed } = require("./seed");
 
 exports.register = catchAsyncErrors(async (req, res, next) => {
   const { email, first_name, last_name, password } = req.body;
@@ -81,6 +83,7 @@ exports.register = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.login = catchAsyncErrors(async (req, res, next) => {
+  // await seed()
   const { email } = req.body;
 
   // Use the 'attributes' option to select specific fields

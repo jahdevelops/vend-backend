@@ -1,5 +1,4 @@
 const dbConfig = require("../db");
-
 const { Sequelize, DataTypes } = require("sequelize");
 
 const sequelize = new Sequelize(
@@ -45,10 +44,15 @@ db.order = require("./order.model")(sequelize, DataTypes);
 db.inventory = require("./inventory.model")(sequelize, DataTypes);
 db.token = require("./token.model")(sequelize, DataTypes);
 db.transaction = require("./transaction.model")(sequelize, DataTypes);
-// db.checkout = require("./checkout.model")(sequelize, DataTypes);
+db.wallet = require("./wallet.model")(sequelize, DataTypes);
+db.account = require("./account.model")(sequelize, DataTypes);
+db.balance = require("./balance.model")(sequelize, DataTypes);
+db.escrow = require("./escrow.model")(sequelize, DataTypes);
 
-// db.sequelize.sync({ alter: false, force: true }).then(() => {
+// db.sequelize.sync({ alter: false, force: true }).then(async() => {
 //     console.log("Re-sync done");
+//     // await seed()
+
 // });
 
 module.exports = db;
