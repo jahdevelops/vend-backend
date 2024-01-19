@@ -9,6 +9,8 @@ const sendEmail = require("../../utils/sendMail");
 const db = require("../../model");
 const { Op } = require("sequelize");
 const User = db.user;
+const Wallet = db.wallet;
+const Balance = db.balance;
 exports.getPendingSellers = catchAsyncErrors(async (req, res, next) => {
   const users = await User.findAll({
     where: {
@@ -37,7 +39,23 @@ exports.approveNewSeller = catchAsyncErrors(async (req, res, next) => {
   if (user.role === "seller") {
     return next(new ErrorHandler("User is already a seller", 400));
   }
-  await User.update({ role: "seller" }, { where: { id: id } });
+
+  const wallet = await Wallet.create({
+    userId: id,
+  });
+
+  const balance = await Balance.create({
+    walletId: wallet.id,
+    userId: id,
+    balance: 0,
+  });
+
+  wallet.accountBalance = balance.id;
+  await wallet.save();
+  await User.update(
+    { role: "seller", walletId: wallet.id },
+    { where: { id: id } },
+  );
   await sendEmail({
     email: `${user.first_name} <${user.email}>`,
     subject: "Seller Approval",

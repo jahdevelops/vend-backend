@@ -23,7 +23,7 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
       return next(
         new ErrorHandler(
           `The product with id:${product.productId} is not found`,
-          400,
+          404,
         ),
       );
     }
@@ -45,7 +45,7 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
     if (Number(product.quantity) > inventory.quantity) {
       return next(
         new ErrorHandler(
-          `This Product${product.productId}  does not have up to this amount in stock`,
+          `This Product ${product.productId}  does not have up to this amount in stock`,
           400,
         ),
       );
@@ -77,6 +77,9 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
             ? 1000
             : productsAmount * 0.09),
   });
+  for (const carts of cart) {
+    await carts.destroy();
+  }
   return res.status(201).json({
     success: true,
     message: "Order created successfully",
@@ -124,13 +127,22 @@ exports.getAllOrder = catchAsyncErrors(async (req, res, next) => {
   );
   const response = {
     success: true,
-    totalProducts: orders.count,
+    totalOrders: orders.count,
     message: "All orders",
-    products: orders.rows,
+    orders: orders.rows,
     currentPage: page,
     totalPages: Math.ceil(orders.count / pageSize),
   };
   return res.status(200).json(response);
+});
+exports.getOrder = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const order = await Order.findOne({ where: { userId: req.user.id, id: id } });
+  return res.status(200).json({
+    success: true,
+    message: "Order",
+    order,
+  });
 });
 exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
@@ -138,7 +150,6 @@ exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
   if (!order) {
     return next(new ErrorHandler("Order not found", 404));
   }
-
   await order.destroy();
   res.status(204).end();
 });

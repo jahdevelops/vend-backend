@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       isVerified: DataTypes.BOOLEAN,
       phoneNumber: DataTypes.STRING(11),
       id_number: DataTypes.STRING(26),
+      walletId: DataTypes.UUID,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
     },

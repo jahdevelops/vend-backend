@@ -20,6 +20,8 @@ const {
 const User = db.user;
 const Token = db.token;
 const { jwt_secret, url } = require("../config");
+// eslint-disable-next-line no-unused-vars
+const { seed } = require("./seed");
 
 exports.register = catchAsyncErrors(async (req, res, next) => {
   const { email, first_name, last_name, password } = req.body;
@@ -70,7 +72,7 @@ exports.register = catchAsyncErrors(async (req, res, next) => {
   const body = `Your email Verification Token is :-\n\n ${link} (This is only available for 15 Minutes!)\n\nif you have not requested this email  then, please Ignore it`;
   await sendEmail({
     email: `${user.first_name} <${user.email}>`,
-    subject: "Veritfy Account",
+    subject: "Verify Account",
     html: body,
   });
   return res.status(201).json({
@@ -81,6 +83,7 @@ exports.register = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.login = catchAsyncErrors(async (req, res, next) => {
+  // await seed()
   const { email } = req.body;
 
   // Use the 'attributes' option to select specific fields
@@ -113,7 +116,7 @@ exports.login = catchAsyncErrors(async (req, res, next) => {
   });
   return res.status(200).json({
     success: true,
-    message: "User logged successfully",
+    message: "User logged in successfully",
     user,
     token: accessToken,
   });
@@ -487,7 +490,7 @@ const generateAuthToken = async (userId, role, isVerified) => {
     .toISOString()
     .slice(0, 19)
     .replace("T", " ");
-  Token.create({
+  await Token.create({
     userId: userId,
     token: hash,
     type: "refresh_token",

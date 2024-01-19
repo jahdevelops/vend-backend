@@ -77,10 +77,17 @@ exports.addToCart = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.editCart = catchAsyncErrors(async (req, res, next) => {
-  const { productId, quantity } = req.body;
-
-  if (!productId || !quantity) {
+  const { productId, quantity, inventoryId } = req.body;
+  0;
+  if (!productId || (!quantity && !inventoryId)) {
     return next(new ErrorHandler(requiredField.message, requiredField.code));
+  }
+  if (inventoryId && !quantity) {
+    return next(
+      new ErrorHandler(
+        "Please provide the quantity you want for this inventory",
+      ),
+    );
   }
   const product = await Product.findByPk(productId);
 
@@ -99,7 +106,7 @@ exports.editCart = catchAsyncErrors(async (req, res, next) => {
   }
   const inventory = await Inventory.findOne({
     where: {
-      id: existingCart.inventoryId,
+      id: inventoryId ? inventoryId : existingCart.inventoryId,
       productId: productId,
     },
   });
@@ -115,12 +122,15 @@ exports.editCart = catchAsyncErrors(async (req, res, next) => {
       ),
     );
   }
+  existingCart.inventoryId = inventoryId
+    ? inventoryId
+    : existingCart.inventoryId;
   existingCart.quantity = Number(quantity);
   existingCart.prices = Number(product.price) * existingCart.quantity;
   await existingCart.save();
   return res.status(200).json({
     success: true,
-    message: "Product added successfully",
+    message: "Cart Updated successfully",
     cart: existingCart,
   });
 });
