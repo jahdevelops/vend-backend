@@ -48,6 +48,7 @@ db.wallet = require("./wallet.model")(sequelize, DataTypes);
 db.account = require("./account.model")(sequelize, DataTypes);
 db.balance = require("./balance.model")(sequelize, DataTypes);
 db.escrow = require("./escrow.model")(sequelize, DataTypes);
+db.notification = require("./notification.model")(sequelize, DataTypes);
 
 // db.sequelize.sync({ alter: false, force: true }).then(async() => {
 //     console.log("Re-sync done");
