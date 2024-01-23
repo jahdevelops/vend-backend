@@ -53,7 +53,7 @@ jobs:
 
       - name: Set environment variables
         run: |
-          echo "jwt_secret=${{ secrets.WT_SECRET }}" >> $GITHUB_ENV
+          echo "jwt_secret=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
           echo "smpt_host=${{ secrets.SMPT_HOST }}" >> $GITHUB_ENV
           echo "smpt_port=${{ secrets.SMPT_PORT }}" >> $GITHUB_ENV
           echo "smpt_service=${{ secrets.SMPT_SERVICE }}" >> $GITHUB_ENV
@@ -69,7 +69,7 @@ jobs:
           echo "cloudinary_name=${{ secrets.CLOUDINARY_NAME }}" >> $GITHUB_ENV
           echo "cloudinary_apikey=${{ secrets.CLOUDINARY_APIKEY }}" >> $GITHUB_ENV
           echo "cloudinary_secret=${{ secrets.CLOUDINARY_SECRET }}" >> $GITHUB_ENV
-          echo "paystack=${{ secrets.PAYSTACK_SECRET }}" >> $GITHUB_ENV
+          echo "paystack=${{ secrets.PAYSTACK }}" >> $GITHUB_ENV
 
       - name: Login to Azure
         uses: azure/login@v1
