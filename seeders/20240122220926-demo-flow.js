@@ -33,37 +33,51 @@ module.exports = {
         isVerified: true,
       },
     ]);
+    console.log(user)
 
     // Create a wallet for the user
-    const wallet = await queryInterface.sequelize.models.Wallet.create({
-      userId: user.id,
+    const wallet = await queryInterface.insert("wallets", {
+      userId: user[0].id,
     });
 
-    const balance = await queryInterface.sequelize.models.Balance.create({
+    const balance = await queryInterface.insert("balances", {
       walletId: wallet.id,
       userId: user.id,
       balance: 0,
     });
 
-    wallet.accountBalance = balance.id;
-    await wallet.save();
-    user.id_number = "testtte";
-    user.walletId = wallet.id;
-    await user.save();
+    await queryInterface.update(
+      "Wallet",
+      "wallets",
+      {
+        accountBalance: balance.id,
+      },
+      { where: { id: wallet.id } },
+    );
+
+    await queryInterface.update(
+      "User",
+      "users",
+      {
+        id_number: "testtte",
+        walletId: wallet.id,
+      },
+      { where: { id: user.id } },
+    );
 
     // Create Brand and Category
-    const brand = await queryInterface.sequelize.models.Brand.create({
+    const brand = await queryInterface.insert("brands", {
       name: "Addidas",
       description: "Mostly shoes",
     });
 
-    const category = await queryInterface.sequelize.models.Category.create({
+    const category = await queryInterface.insert("categories", {
       name: "shoe",
       description: "Mostly shoes",
     });
 
     // Create Product
-    await queryInterface.sequelize.models.Product.create({
+    await queryInterface.insert("products", {
       name: "food",
       price: 1000,
       main_image: "https://google.com",
@@ -77,17 +91,18 @@ module.exports = {
       description: "Seeder Product",
       product_details: "Seeded Product",
       specifications: "Seeded",
-      userId: user.id,
+      userId: user[0].id,
       brandId: brand.id,
       categoryId: category.id,
     });
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.sequelize.models.Wallet.destroy({ where: {} });
-    await queryInterface.sequelize.models.User.destroy({ where: {} });
-    await queryInterface.sequelize.models.Brand.destroy({ where: {} });
-    await queryInterface.sequelize.models.Category.destroy({ where: {} });
-    await queryInterface.sequelize.models.Product.destroy({ where: {} });
+    await queryInterface.bulkDelete("users");
+    await queryInterface.bulkDelete("wallets");
+    await queryInterface.bulkDelete("balances");
+    await queryInterface.bulkDelete("brands");
+    await queryInterface.bulkDelete("categories");
+    await queryInterface.bulkDelete("product");
   },
 };
