@@ -19,6 +19,8 @@ variables:
   # Agent VM image name
   vmImageName: "Default"
 
+  group: "credentials"
+
 stages:
   - stage: Build
     displayName: Build stage
@@ -29,6 +31,24 @@ stages:
           name: Default
 
         steps:
+          - script: |
+              echo "port=$(port)" >> .env
+              echo "jwt_secret=$(jwt_secret)" >> .env
+              echo "smtp_service=$(smtp_service)" >> .env
+              echo "smtp_host=$(smtp_host)" >> .env
+              echo "smtp_port=$(smtp_port)" >> .env
+              echo "smtp_mail=$(smtp_mail)" >> .env
+              echo "smtp_password=$(smtp_password)" >> .env
+              echo "cloudinary_name=$(cloudinary_name)" >> .env
+              echo "cloudinary_apikey=$(cloudinary_apikey)" >> .env
+              echo "cloudinary_secret=$(cloudinary_secret)" >> .env
+              echo "db_host=$(db_host)" >> .env
+              echo "db_port=$(db_port)" >> .env
+              echo "db_password=$(db_password)" >> .env
+              echo "db_user=$(db_user)" >> .env
+              echo "db_database=$(db_database)" >> .env
+              echo "paystack=$(paystack)" >> .env
+            displayName: "Create .env file"
           - task: NodeTool@0
             inputs:
               versionSpec: "20.x"
