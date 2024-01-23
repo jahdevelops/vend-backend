@@ -75,3 +75,27 @@ stages:
                     runtimeStack: "NODE|20.11"
                     package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
                     startUpCommand: "npm run start"
+                - task: AzureAppServiceSettings@1
+                  inputs:
+                    azureSubscription: $(azureSubscription)
+                    appName: $(webAppName)
+                    resourceGroupName: "vend-backend"  # Replace with your actual resource group name
+                    appSettings: |
+                      - jwt_secret=$(JWT_SECRET)
+                      - smpt_host=$(SMPT_HOST)
+                      - smpt_port=$(SMPT_PORT)
+                      - smpt_service=$(SMPT_SERVICE)
+                      - smpt_mail=$(SMPT_MAIL)
+                      - smpt_password=$(SMPT_PASSWORD)
+                      - smpt=$(SMPT)
+                      - db_host=$(DB_HOST)
+                      - db_port=$(DB_PORT)
+                      - db_user=$(DB_USER)
+                      - db_password=$(DB_PASSWORD)
+                      - db_database=$(DB_DATABASE)
+                      - client_url=$(CLIENT_URL)
+                      - cloudinary_name=$(CLOUDINARY_NAME)
+                      - cloudinary_apikey=$(CLOUDINARY_APIKEY)
+                      - cloudinary_secret=$(CLOUDINARY_SECRET)
+                      - paystack=$(PAYSTACK)
+                      - port=$(PORT)
