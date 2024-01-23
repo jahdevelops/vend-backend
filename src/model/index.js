@@ -1,6 +1,15 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 const dbConfig = require("../db");
 const { Sequelize, DataTypes } = require("sequelize");
+const fs = require("fs");
+const path = require("path");
 
+const certificateFilePath = path.resolve(
+  __dirname,
+  "../config/DigiCertGlobalRootCA.crt.pem",
+);
+const certificateContents = fs.readFileSync(certificateFilePath, "utf8");
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.username,
@@ -15,6 +24,13 @@ const sequelize = new Sequelize(
       min: dbConfig.pool.min,
       acquire: dbConfig.pool.acquire,
       idle: dbConfig.pool.idle,
+    },
+
+    //comment this on local dev
+    dialectOptions: {
+      ssl: {
+        ca: certificateContents,
+      },
     },
   },
 );

@@ -29,5 +29,5 @@ exports.cloudinaryConfig = {
 };
 
 exports.paystack = {
-  secret: "sk_test_195bfc884f5f8e730607e8030aae6b953b53d2ee",
+  secret: process.env.paystack,
 };
