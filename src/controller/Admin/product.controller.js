@@ -27,6 +27,7 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
 
   return res.status(200).json(response);
 });
+
 exports.getProduct = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
   const product = await Product.findOne({

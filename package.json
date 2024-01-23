@@ -10,7 +10,8 @@
     "fix-code": "prettier-eslint --write 'src/**/*.js'",
     "prettier": "prettier --write .",
     "lint": "eslint src/**/*.js",
-    "format": "eslint src/**/*.js --fix"
+    "format": "eslint src/**/*.js --fix",
+    "seeders": "sequelize-cli db:seed --seed 20240122220926-demo-flow.js"
   },
   "keywords": [],
   "author": "",

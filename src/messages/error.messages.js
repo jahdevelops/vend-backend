@@ -38,3 +38,9 @@ exports.productNotFound = {
   message: "Product not found",
   code: 404,
 };
+
+//orders
+exports.orderNotFound = {
+  message: "order not found",
+  code: 404,
+};

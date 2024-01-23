@@ -1,10 +1,10 @@
 {
   "development": {
-    "username": "root",
-    "password": "$",
-    "database": "vend",
-    "host": "127.0.0.1",
-    "port": "3307",
+    "username": "admin",
+    "password": "aMPoi6Gpz4wIdrNA4rRm",
+    "database": "vend_db",
+    "host": "database-1.ck5irqxivbxt.us-east-1.rds.amazonaws.com",
+    "port": "3306",
     "dialect": "mysql"
   },
   "test": {

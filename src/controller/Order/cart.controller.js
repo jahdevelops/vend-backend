@@ -60,9 +60,9 @@ exports.addToCart = catchAsyncErrors(async (req, res, next) => {
       ),
     );
   }
-
   let cart = await Cart.create({
     userId: id,
+    sellerId: product.userId,
     productId: productId,
     quantity: quantity,
     inventoryId: inventoryId,
