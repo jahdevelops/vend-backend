@@ -9,6 +9,7 @@ module.exports = {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
+      description: DataTypes.TEXT,
       name: DataTypes.STRING,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,

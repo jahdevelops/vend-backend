@@ -9,7 +9,6 @@ module.exports = {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      userId: DataTypes.UUID,
       token: DataTypes.STRING,
       type: {
         type: DataTypes.ENUM("reset_password", "verify_email", "refresh_token"),

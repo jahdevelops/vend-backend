@@ -16,10 +16,7 @@ module.exports = {
       description: DataTypes.TEXT,
       product_details: DataTypes.TEXT,
       specifications: DataTypes.TEXT,
-      userId: DataTypes.UUID,
-      brandId: DataTypes.UUID,
-      categoryId: DataTypes.UUID,
-      inventory: DataTypes.STRING,
+      inventory: DataTypes.UUID,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
       userId: {

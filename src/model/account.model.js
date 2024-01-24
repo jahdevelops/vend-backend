@@ -10,7 +10,15 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    userId: DataTypes.UUID,
+    userId: {
+      type: DataTypes.UUID,
+      references: {
+        model: "users",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
+    },
     accountNumber: DataTypes.STRING,
     accountName: DataTypes.STRING,
     bankName: DataTypes.STRING,

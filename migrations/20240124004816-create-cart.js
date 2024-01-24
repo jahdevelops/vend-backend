@@ -9,12 +9,26 @@ module.exports = {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      productId: DataTypes.UUID,
       quantity: DataTypes.FLOAT,
       prices: DataTypes.FLOAT,
-      inventoryId: DataTypes.UUID,
-      createdAt: DataTypes.DATE,
-      updatedAt: DataTypes.DATE,
+      productId: {
+        type: DataTypes.UUID,
+        references: {
+          model: "products",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
+      inventoryId: {
+        type: DataTypes.UUID,
+        references: {
+          model: "inventories",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
       sellerId: {
         type: DataTypes.UUID,
         references: {
@@ -33,6 +47,8 @@ module.exports = {
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
+      createdAt: DataTypes.DATE,
+      updatedAt: DataTypes.DATE,
     });
   },
 

@@ -9,7 +9,6 @@ module.exports = {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      orderId: DataTypes.UUID,
       amount: DataTypes.INTEGER,
       transactionType: {
         type: DataTypes.ENUM("sale", "refund", "cancellation"),

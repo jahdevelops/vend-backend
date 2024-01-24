@@ -9,8 +9,24 @@ module.exports = {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      walletId: DataTypes.UUID,
-      userId: DataTypes.UUID,
+      walletId: {
+        type: DataTypes.UUID,
+        references: {
+          model: "wallets",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
+      userId: {
+        type: DataTypes.UUID,
+        references: {
+          model: "users",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
       balance: DataTypes.FLOAT,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
