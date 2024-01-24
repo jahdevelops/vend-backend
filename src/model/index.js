@@ -38,7 +38,7 @@ db.product = require("./product.model")(sequelize, DataTypes);
 
 db.brand = require("./brand.model")(sequelize, DataTypes);
 db.address = require("./address.model")(sequelize, DataTypes);
-db.category = require("./category.model")(sequelize, DataTypes);
+db.category = require("./caregory.model")(sequelize, DataTypes);
 db.cart = require("./cart.model")(sequelize, DataTypes);
 db.order = require("./order.model")(sequelize, DataTypes);
 db.inventory = require("./inventory.model")(sequelize, DataTypes);
