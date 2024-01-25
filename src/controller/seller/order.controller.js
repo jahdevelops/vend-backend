@@ -1,5 +1,6 @@
 const db = require("../../model");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
+const Sequelize = require("sequelize");
 const Order = db.order;
 
 exports.getAllOrders = catchAsyncErrors(async (req, res) => {
@@ -12,11 +13,10 @@ exports.getAllOrders = catchAsyncErrors(async (req, res) => {
 
   const orders = await Order.findAndCountAll(
     { 
-      where: {
-        carts: {
-          sellerId: id
-        }
-      },  
+      where: Sequelize.where(
+        Sequelize.fn('JSON_CONTAINS', Sequelize.col('carts'), `{"sellerId": "${id}"}`),
+        true
+      ),
       offset,
       limit: pageSize,
       order: [[sortBy, sort]],
