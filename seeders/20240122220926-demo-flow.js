@@ -3,14 +3,14 @@ const bcrypt = require("bcryptjs");
 const { Op } = require("sequelize");
 const { v4: uuid } = require("uuid");
 
-const sellerId = "8518ee9c-7316-44d9-b11a-3ee15d01033d";
-const buyerId = "2d2ddbb8-b8fc-4df3-b7d6-cabe796c92ad";
-const adminId = "48ebbe82-a651-4030-9ffa-b8214026df10";
-const walletId = "acde3b8d-19bc-4a2e-ae60-2f438a4f1431";
-const brandId = "94fec972-de64-4a6e-b314-0b6d6239bbb6";
-const categoryId = "9070ba13-d989-415c-89a2-d53f962707dc";
-const productId = "13159492-1f3b-4f61-a987-bd595fa0709f";
-const balanceId = "4f25b9bb-4efa-4947-8bc0-ff3fc953c05a";
+const sellerId = uuid();
+const buyerId = uuid();
+const adminId = uuid();
+const walletId = uuid();
+const brandId = uuid();
+const categoryId = uuid();
+const productId = uuid();
+const balanceId = uuid();
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -86,6 +86,7 @@ module.exports = {
       name: "shoe",
       description: "Mostly shoes",
     }]);
+
 
     // Create Product
     await queryInterface.bulkInsert("products", [{
