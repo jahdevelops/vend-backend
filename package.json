@@ -11,7 +11,7 @@
     "prettier": "prettier --write .",
     "lint": "eslint src/**/*.js",
     "format": "eslint src/**/*.js --fix",
-    "seed-mysql": "cross-env NODE_ENV=development sequelize-cli db:seed --seed 20240122220926-demo-flow.js --debug"
+    "seed-mysql": "sequelize-cli db:seed --seed 20240122220926-demo-flow.js --debug"
   },
   "keywords": [],
   "author": "",

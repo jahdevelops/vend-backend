@@ -1,16 +1,16 @@
 "use strict";
 const bcrypt = require("bcryptjs");
 const { Op } = require("sequelize");
-const { v4: uuid } = require("uuid");
+const crypto = require("crypto");
 
-const sellerId = uuid();
-const buyerId = uuid();
-const adminId = uuid();
-const walletId = uuid();
-const brandId = uuid();
-const categoryId = uuid();
-const productId = uuid();
-const balanceId = uuid();
+const sellerId = crypto.randomUUID();
+const buyerId = crypto.randomUUID();
+const adminId = crypto.randomUUID();
+const walletId = crypto.randomUUID();
+const brandId = crypto.randomUUID();
+const categoryId = crypto.randomUUID();
+const productId = crypto.randomUUID();
+const balanceId = crypto.randomUUID();
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
