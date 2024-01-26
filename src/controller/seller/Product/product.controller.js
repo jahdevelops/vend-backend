@@ -9,6 +9,7 @@ const cloudinary = require("cloudinary");
 const crypto = require("crypto");
 const db = require("../../../model");
 const Product = db.product;
+const Notification = db.notification;
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
   console.log(req.body);
   const {
@@ -118,6 +119,13 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
   // });
   await product.update({ inventory: product.id });
   await product.save();
+  await Notification.create({
+    userId: id,
+    type: "product",
+    description: `Product ${name} created successfully`,
+    urlPath: `/api/v1/seller/product/${product.id}`,
+    read: false,
+  });
   return res.status(201).json({
     success: true,
     message: "Product created successfully",

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const express = require("express");
 // require('express-async-errors')
 const app = express();
@@ -11,14 +12,17 @@ const corsOptions = require("./config/corsOptions");
 const routes = require("./routes");
 const morgan = require("morgan");
 const helmet = require("helmet");
-
+const { useTreblle } = require("treblle");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan("common"));
-
+useTreblle(app, {
+  apiKey: process.env.trebble_api_key,
+  projectId: process.env.trebble_projectId,
+});
 app.use(credentials);
 app.use(cors(corsOptions));
 
@@ -34,6 +38,7 @@ const sessionConfig = {
     maxAge: 1000 + 60 * 60 * 24 * 7,
   },
 };
+
 app.use(session(sessionConfig));
 
 app.use(routes);

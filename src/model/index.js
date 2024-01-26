@@ -1,6 +1,15 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 const dbConfig = require("../db");
 const { Sequelize, DataTypes } = require("sequelize");
+const fs = require("fs");
+const path = require("path");
 
+const certificateFilePath = path.resolve(
+  __dirname,
+  "../config/DigiCertGlobalRootCA.crt.pem",
+);
+const certificateContents = fs.readFileSync(certificateFilePath, "utf8");
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.username,
@@ -15,6 +24,13 @@ const sequelize = new Sequelize(
       min: dbConfig.pool.min,
       acquire: dbConfig.pool.acquire,
       idle: dbConfig.pool.idle,
+    },
+
+    //comment this on local dev
+    dialectOptions: {
+      ssl: {
+        ca: certificateContents,
+      },
     },
   },
 );
@@ -48,6 +64,7 @@ db.wallet = require("./wallet.model")(sequelize, DataTypes);
 db.account = require("./account.model")(sequelize, DataTypes);
 db.balance = require("./balance.model")(sequelize, DataTypes);
 db.escrow = require("./escrow.model")(sequelize, DataTypes);
+db.notification = require("./notification.model")(sequelize, DataTypes);
 
 // db.sequelize.sync({ alter: false, force: true }).then(async() => {
 //     console.log("Re-sync done");

@@ -4,6 +4,7 @@ const ErrorHandler = require("../../../utils/errorHandler");
 const db = require("../../../model");
 const Product = db.product;
 const Inventory = db.inventory;
+const Notification = db.notification;
 
 exports.createInventory = catchAsyncErrors(async (req, res, next) => {
   const inventoryData = req.body;
@@ -25,8 +26,30 @@ exports.createInventory = catchAsyncErrors(async (req, res, next) => {
       ),
     );
   }
+  let productsArray = [];
+  for (const product of inventoryData) {
+    const retrieved = await Product.findOne({
+      where: { id: product.productId },
+    });
+    if (!retrieved)
+      return next(
+        new ErrorHandler(
+          `The Product with id: ${product.productId} not found`,
+          404,
+        ),
+      );
+    productsArray.push(product.productId);
+  }
   const inventories = await Inventory.bulkCreate(inventoryData);
-
+  for (const each of productsArray) {
+    await Notification.create({
+      userId: req.user.id,
+      type: "inventory",
+      description: `The Inventory for product ${each} created successfully`,
+      urlPath: `/api/v1/seller/inventory/product/${each}`,
+      read: false,
+    });
+  }
   return res.status(200).json({
     success: true,
     message: "Product Inventories created successfully",

@@ -7,6 +7,7 @@ const Order = db.order;
 // const Transaction = db.transaction;
 const Inventory = db.inventory;
 const Cart = db.cart;
+const Notification = db.notification;
 
 exports.createOrder = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.user;
@@ -51,6 +52,12 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
       );
     }
     productsAmount += product.prices;
+    await Notification.create({
+      userId: productExist.userId,
+      type: "order",
+      description: `A pending Order has been made for your product ${productExist.name}, it's awaiting payment`,
+      read: false,
+    });
   }
   const order = await Order.create({
     userId: id,

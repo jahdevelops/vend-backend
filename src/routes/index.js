@@ -6,6 +6,7 @@ const admin = require("./Admin");
 const product = require("./Product");
 const order = require("./Order");
 const transaction = require("./Transaction");
+const notification = require("./notification.route");
 const {
   isAuthenticatedUser,
   checkVerified,
@@ -26,6 +27,12 @@ router.use(
 router.use("/api/v1/product", product);
 router.use("/api/v1/order", isAuthenticatedUser, checkVerified, order);
 router.use("/api/v1/transaction", transaction);
+router.use(
+  "/api/v1/notification",
+  isAuthenticatedUser,
+  checkVerified,
+  notification,
+);
 router.get("/", (req, res) => {
   return res
     .status(200)

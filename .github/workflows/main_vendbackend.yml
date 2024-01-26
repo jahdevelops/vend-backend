@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - vendbackend
 
 on:
@@ -68,3 +65,22 @@ jobs:
           app-name: "vendbackend"
           slot-name: "Production"
           package: .
+        env:
+          jwt_secret: ${{ secrets.JWT_SECRET }}
+          smpt_host: ${{ secrets.SMPT_HOST }}
+          smpt_port: ${{ secrets.SMPT_PORT }}
+          smpt_service: ${{ secrets.SMPT_SERVICE }}
+          smpt_mail: ${{ secrets.SMPT_MAIL }}
+          smpt_password: ${{ secrets.SMPT_PASSWORD }}
+          smpt: ${{ secrets.SMPT }}
+          db_host: ${{ secrets.DB_HOST }}
+          db_port: ${{ secrets.DB_PORT }}
+          db_user: ${{ secrets.DB_USER }}
+          db_password: ${{ secrets.DB_PASSWORD }}
+          db_database: ${{ secrets.DB_DATABASE }}
+          client_url: ${{ secrets.CLIENT_URL }}
+          cloudinary_name: ${{ secrets.CLOUDINARY_NAME }}
+          cloudinary_apikey: ${{ secrets.CLOUDINARY_APIKEY }}
+          cloudinary_secret: ${{ secrets.CLOUDINARY_SECRET }}
+          paystack: ${{ secrets.PAYSTACK }}
+          port: ${{ secrets.PORT }}

@@ -8,6 +8,7 @@ const User = db.user;
 const Product = db.product;
 const Inventory = db.inventory;
 const Escrow = db.escrow;
+const Notification = db.notification;
 const https = require("https");
 const axios = require("axios");
 const { paystack } = require("../../config");
@@ -124,11 +125,26 @@ exports.post = catchAsyncErrors(async (req, res, next) => {
           const sellerInfo = await User.findOne({
             where: { id: orderedProduct.userId },
           });
+          await Notification.create({
+            userId: sellerInfo.id,
+            type: "order",
+            description: `An Order for your product ${orderedProduct.name} has been placed successfully`,
+            read: false,
+          });
           await Escrow.create({
             userId: sellerInfo.id,
             walletId: sellerInfo.walletId,
             amount: Number(product.prices),
             status: "pending",
+          });
+          await Notification.create({
+            userId: sellerInfo.id,
+            type: "escrow",
+            description: `${Number(product.prices)} NGN for ordered product ${
+              orderedProduct.name
+            } has been successfully deposited into your escrow... money will be released after successful delivery`,
+            urlPath: "/api/v1/transaction/escrow",
+            read: false,
           });
           // const sellerArray = sellers.find(orderedProduct.userId);
           // if (!sellerArray) {
@@ -140,7 +156,12 @@ exports.post = catchAsyncErrors(async (req, res, next) => {
         orders.transactionId = trnId;
         orders.status = "processing";
         await orders.save();
-
+        await Notification.create({
+          userId: orders.userId,
+          type: "order",
+          description: `Your Order is now processing`,
+          read: false,
+        });
         await sendEmail({
           email: `${user.first_name} <${user.email}>`,
           subject: "Order Processing",
