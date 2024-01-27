@@ -21,7 +21,11 @@ exports.getAllOrders = catchAsyncErrors(async (req, res) => {
       limit: pageSize,
       order: [[sortBy, sort]],
     }
-  )
+  );
+  orders.rows.forEach(order => {
+    const matchedCarts = order.carts.filter(cartItem => cartItem.sellerId === id)
+    order.carts = matchedCarts
+  });
 
   const response = {
     success: true,
