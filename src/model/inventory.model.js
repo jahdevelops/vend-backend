@@ -14,7 +14,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT,
       allowNull: true,
     },
-    productId: DataTypes.UUID,
+    productId: {
+      type: DataTypes.UUID,
+      references: {
+        model: "products",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
+    },
     size: {
       type: DataTypes.STRING,
       allowNull: true,

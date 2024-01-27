@@ -124,6 +124,7 @@ exports.getAllOrder = catchAsyncErrors(async (req, res, next) => {
   const offset = (page - 1) * pageSize;
   const validSortOrders = ["asc", "desc"];
   const sort = validSortOrders.includes(sortOrder) ? sortOrder : "asc";
+
   const orders = await Order.findAndCountAll(
     { where: { userId: id, status: status } },
     {
@@ -142,6 +143,7 @@ exports.getAllOrder = catchAsyncErrors(async (req, res, next) => {
   };
   return res.status(200).json(response);
 });
+
 exports.getOrder = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
   const order = await Order.findOne({ where: { userId: req.user.id, id: id } });

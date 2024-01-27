@@ -9,7 +9,6 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    userId: DataTypes.UUID,
     streetAddress: DataTypes.TEXT,
     city: DataTypes.STRING,
     state: DataTypes.STRING,

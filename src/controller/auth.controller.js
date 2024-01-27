@@ -83,7 +83,7 @@ exports.register = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.login = catchAsyncErrors(async (req, res, next) => {
-  // await seed()
+  // await seed();
   const { email } = req.body;
 
   // Use the 'attributes' option to select specific fields
