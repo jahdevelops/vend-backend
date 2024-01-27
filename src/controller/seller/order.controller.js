@@ -11,17 +11,19 @@ exports.getAllOrders = catchAsyncErrors(async (req, res) => {
   const sort = validSortOrders.includes(sortOrder) ? sortOrder : "asc";
   const offset = (page - 1) * pageSize;
 
-  const orders = await Order.findAndCountAll(
-    { 
-      where: Sequelize.where(
-        Sequelize.fn('JSON_CONTAINS', Sequelize.col('carts'), `{"sellerId": "${id}"}`),
-        true
+  const orders = await Order.findAndCountAll({
+    where: Sequelize.where(
+      Sequelize.fn(
+        "JSON_CONTAINS",
+        Sequelize.col("carts"),
+        `{"sellerId": "${id}"}`,
       ),
-      offset,
-      limit: pageSize,
-      order: [[sortBy, sort]],
-    }
-  )
+      true,
+    ),
+    offset,
+    limit: pageSize,
+    order: [[sortBy, sort]],
+  });
 
   const response = {
     success: true,
