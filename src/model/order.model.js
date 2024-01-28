@@ -9,17 +9,32 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    userId: DataTypes.UUID,
+    userId: {
+      type: DataTypes.UUID,
+      references: {
+        model: "users",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
+    },
     status: {
       type: DataTypes.ENUM("pending", "processing", "shipped", "delivered"),
     },
     paymentMethod: {
       type: DataTypes.ENUM("card", "on_delievery"),
     },
-
-    carts: DataTypes.JSON,
-    addressId: DataTypes.UUID,
+    addressId: {
+      type: DataTypes.UUID,
+      references: {
+        model: "addresses",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
+    },
     transactionId: DataTypes.UUID,
+    carts: DataTypes.JSON,
     productsAmount: DataTypes.INTEGER,
     delieveryAmount: DataTypes.INTEGER,
     taxAmount: DataTypes.INTEGER,
