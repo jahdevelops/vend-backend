@@ -96,6 +96,10 @@ exports.post = catchAsyncErrors(async (req, res, next) => {
     Authorization: `Bearer ${paystack.secret}`,
   };
   const transaction = await Transaction.findOne({ where: { id: trnId } });
+  if (!transaction) {
+    return next(new ErrorHandler("Invalid transaction ID passed", 404));
+  }
+
   await axios
     .get(`https://api.paystack.co/transaction/verify/${trxref}`, { headers })
     .then(async (response) => {
@@ -208,7 +212,3 @@ exports.getTransaction = catchAsyncErrors(async (req, res, next) => {
     transaction,
   });
 });
-
-// exports.getAllUsersTransaction = catchAsyncErrors(async(req, res, next) => {
-
-// })
