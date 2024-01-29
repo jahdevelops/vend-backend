@@ -37,3 +37,29 @@ exports.getAllUsersTransaction = catchAsyncErrors(async(req, res) => {
   return res.status(200).json(response);
 })
 
+exports.getTotalRevenue = catchAsyncErrors(async (req, res, next) => {
+  
+  await axios.get('https://api.paystack.co/balance', {
+    headers: {Authorization: `Bearer ${paystack.secret}`},
+  }).then(axiosResponse => {
+    if (!axiosResponse.data.status) {
+      return next(ErrorHandler("Could not fetch total revenue", 400));
+    };
+    const nairaBalance = axiosResponse.data.data.filter(i => i.currency === "NGN");
+    if (nairaBalance.length === 0) {
+      return next(ErrorHandler("Could not get naira balance.", 400));
+    };
+    const balance = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'NGN'
+    }).format(nairaBalance[0].balance);
+
+    const response = {
+      success: true,
+      message: 'Total revenue retrieved',
+      totalRevenue: balance
+    };
+    
+    return res.status(200).json(response);
+  })
+})
