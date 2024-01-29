@@ -7,7 +7,7 @@ const product = require("./Product");
 const order = require("./Order");
 const transaction = require("./Transaction");
 const notification = require("./notification.route");
-const courier = require("./courier.route");
+const courier = require("./Courier");
 const {
   isAuthenticatedUser,
   checkVerified,
