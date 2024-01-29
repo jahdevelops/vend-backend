@@ -7,5 +7,6 @@ const {
 } = require('../../controller/Admin/transaction.controller')
 
 router.route('/').get(getAllUsersTransaction);
+router.route('/revenue').get(getTotalRevenue);
 
 module.exports = router;
