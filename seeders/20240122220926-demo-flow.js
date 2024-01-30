@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const sellerId = crypto.randomUUID();
 const buyerId = crypto.randomUUID();
 const adminId = crypto.randomUUID();
+const courierId = crypto.randomUUID();
 const walletId = crypto.randomUUID();
 const brandId = crypto.randomUUID();
 const categoryId = crypto.randomUUID();
@@ -45,6 +46,15 @@ module.exports = {
         email: "lekejosh6wf@gmail.com",
         password: hash,
         role: "buyer",
+        isVerified: true,
+      },
+      {
+        id: courierId,
+        first_name: "courier",
+        last_name: "courier",
+        email: "courier@ecom.com",
+        password: hash,
+        role: "courier",
         isVerified: true,
       },
     ]);

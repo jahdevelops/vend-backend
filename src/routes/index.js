@@ -18,7 +18,13 @@ const router = Router();
 router.use("/api/v1/auth", auth);
 router.use("/api/v1/user", isAuthenticatedUser, checkVerified, user);
 router.use("/api/v1/seller", isAuthenticatedUser, checkVerified, seller);
-router.use("/api/v1/courier", isAuthenticatedUser, checkVerified, authorizeRole("courier"), courier);
+router.use(
+  "/api/v1/courier",
+  isAuthenticatedUser,
+  checkVerified,
+  authorizeRole("courier"),
+  courier,
+);
 router.use(
   "/api/v1/admin",
   isAuthenticatedUser,
