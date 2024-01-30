@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       password: DataTypes.STRING,
       role: {
-        type: DataTypes.ENUM("buyer", "seller", "admin"),
+        type: DataTypes.ENUM("buyer", "seller", "admin", "courier"),
       },
       isVerified: DataTypes.BOOLEAN,
       phoneNumber: DataTypes.STRING(11),
