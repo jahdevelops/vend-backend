@@ -1,12 +1,17 @@
 const { Router } = require("express");
-const order = require('./order.route');
 
 const {
-    editOrderStatus
+    editOrderStatus,
+    getAllAssignedOrders,
+    getSingleAssignedOrder
 } = require('../../controller/courier/order.controller');
 
 const router = Router();
 
-router.route("/:id").post(editOrderStatus);
+router.route("/:id")
+    .post(editOrderStatus)
+    .get(getSingleAssignedOrder);
+    
+router.route("/").get(getAllAssignedOrders);
 
 module.exports = router;
