@@ -10,7 +10,13 @@ const walletId = crypto.randomUUID();
 const brandId = crypto.randomUUID();
 const categoryId = crypto.randomUUID();
 const productId = crypto.randomUUID();
+const productId2 = crypto.randomUUID();
+const productId3 = crypto.randomUUID();
 const balanceId = crypto.randomUUID();
+const orderId = crypto.randomUUID();
+const courierId1 = crypto.randomUUID();
+const courierId2 = crypto.randomUUID();
+const courierId3 = crypto.randomUUID();
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -28,6 +34,7 @@ module.exports = {
         password: hash,
         role: "seller",
         isVerified: true,
+        updatedAt: new Date()
       },
       {
         id: adminId,
@@ -37,6 +44,7 @@ module.exports = {
         password: hash,
         role: "admin",
         isVerified: true,
+        updatedAt: new Date()
       },
       {
         id: buyerId,
@@ -46,6 +54,37 @@ module.exports = {
         password: hash,
         role: "buyer",
         isVerified: true,
+        updatedAt: new Date()
+      },
+      {
+        id: courierId1,
+        first_name: "Courier",
+        last_name: "Courier",
+        email: "courier@ecom.com",
+        password: hash,
+        role: "courier",
+        isVerified: true,
+        updatedAt: new Date()
+      },
+      {
+        id: courierId2,
+        first_name: "first_C",
+        last_name: "first_C",
+        email: "first_C@ecom.com",
+        password: hash,
+        role: "courier",
+        isVerified: true,
+        updatedAt: new Date()
+      },
+      {
+        id: courierId3,
+        first_name: "scnd_C",
+        last_name: "scnd_C",
+        email: "scnd_C@ecom.com",
+        password: hash,
+        role: "courier",
+        isVerified: true,
+        updatedAt: new Date()
       },
     ]);
 
@@ -104,6 +143,57 @@ module.exports = {
       },
     ]);
 
+    await queryInterface.bulkInsert("orders", [
+      {
+        id: crypto.randomUUID(),
+        userId: buyerId,
+        status: "delivered",
+        paymentMethod: 'on_delievery',
+        courierId: courierId1,
+        updatedAt: new Date(),
+        carts: JSON.stringify([
+          {
+            id: crypto.randomUUID(),
+            productId,
+            sellerId,
+            userId: buyerId
+          },
+        ])
+      },
+      {
+        id: crypto.randomUUID(),
+        userId: buyerId,
+        status: "delivered",
+        paymentMethod: 'on_delievery',
+        courierId: courierId2,
+        updatedAt: new Date(),
+        carts: JSON.stringify([
+          {
+            id: crypto.randomUUID(),
+            productId,
+            sellerId,
+            userId: buyerId
+          },
+        ])
+      },
+      {
+        id: crypto.randomUUID(),
+        userId: buyerId,
+        status: "delivered",
+        paymentMethod: 'on_delievery',
+        courierId: courierId3,
+        updatedAt: new Date(),
+        carts: JSON.stringify([
+          {
+            id: crypto.randomUUID(),
+            productId,
+            sellerId,
+            userId: buyerId
+          },
+        ])
+      },
+    ]);
+
     // Create Product
     await queryInterface.bulkInsert("products", [
       {
@@ -126,26 +216,55 @@ module.exports = {
         brandId: brandId,
         categoryId: categoryId,
       },
+      {
+        id: productId2,
+        name: "food",
+        price: 1000,
+        main_image: "https://google.com",
+        sub_images: JSON.stringify([
+          "https://google.com",
+          "https://google.com",
+          "https://google.com",
+          "https://google.com",
+          "https://google.com",
+        ]),
+        description: "Seeder Product",
+        product_details: "Seeded Product",
+        specifications: "Seeded",
+        inventory: productId,
+        userId: sellerId,
+        brandId: brandId,
+        categoryId: categoryId,
+      },
+      {
+        id: productId3,
+        name: "food",
+        price: 1000,
+        main_image: "https://google.com",
+        sub_images: JSON.stringify([
+          "https://google.com",
+          "https://google.com",
+          "https://google.com",
+          "https://google.com",
+          "https://google.com",
+        ]),
+        description: "Seeder Product",
+        product_details: "Seeded Product",
+        specifications: "Seeded",
+        inventory: productId,
+        userId: sellerId,
+        brandId: brandId,
+        categoryId: categoryId,
+      },
     ]);
   },
 
   async down(queryInterface) {
-    await queryInterface.bulkDelete("users", {
-      id: {
-        [Op.in]: [sellerId, adminId, buyerId],
-      },
-    });
-    await queryInterface.bulkDelete("wallets", {
-      id: walletId,
-    });
-    await queryInterface.bulkDelete("balances", {
-      id: balanceId,
-    });
-    await queryInterface.bulkDelete("brands", {
-      id: brandId,
-    });
-    await queryInterface.bulkDelete("categories", {
-      id: categoryId,
-    });
+    await queryInterface.bulkDelete("users");
+    await queryInterface.bulkDelete("wallets");
+    await queryInterface.bulkDelete("balances");
+    await queryInterface.bulkDelete("brands");
+    await queryInterface.bulkDelete("categories");
+    await queryInterface.bulkDelete("orders");
   },
 };
