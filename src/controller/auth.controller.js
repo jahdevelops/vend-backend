@@ -24,10 +24,13 @@ const { jwt_secret, url } = require("../config");
 const { seed } = require("./seed");
 
 exports.register = catchAsyncErrors(async (req, res, next) => {
-  const { email, first_name, last_name, password } = req.body;
+  const { email, first_name, last_name, password, role } = req.body;
   if (!email || !first_name || !last_name || !password) {
     return next(new ErrorHandler(requiredField.message, requiredField.code));
-  }
+  };
+  if (!['courier', 'admin', 'buyer', 'seller'].includes(role)) {
+    return next(new ErrorHandler("Invalid role selected", requiredField.code));
+  };
   const salt = bcrypt.genSaltSync(10);
   const hash = bcrypt.hashSync(password, salt);
 
@@ -51,7 +54,7 @@ exports.register = catchAsyncErrors(async (req, res, next) => {
     first_name: first_name,
     last_name: last_name,
     password: hash,
-    role: "buyer",
+    role,
     isVerified: false,
   });
 
@@ -84,12 +87,15 @@ exports.register = catchAsyncErrors(async (req, res, next) => {
 
 exports.login = catchAsyncErrors(async (req, res, next) => {
   // await seed();
-  const { email } = req.body;
+  const { email, role } = req.body;
+  if (!email || !role) {
+    return next(new ErrorHandler(requiredField.message, requiredField.code));
+  };
 
   // Use the 'attributes' option to select specific fields
   const withPassword = await User.findOne({
-    where: { email: email },
-    attributes: ["password"],
+    where: { email: email, role: role },
+    attributes: ["password", "role"],
   });
   if (!withPassword)
     return next(new ErrorHandler("Email or password is incorrect", 400));
