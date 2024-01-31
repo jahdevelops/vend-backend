@@ -209,7 +209,7 @@ exports.refreshToken = catchAsyncErrors(async (req, res, next) => {
   const refreshTokenJWTNew = jwt.sign({ userId, refreshToken }, jwt_secret, {
     expiresIn: "1 day",
   });
-  const expiresAt = new Date(Date.now() + ms("1 min"))
+  const expiresAt = new Date(Date.now() + ms("1 day"))
     .toISOString()
     .slice(0, 19)
     .replace("T", " ");
