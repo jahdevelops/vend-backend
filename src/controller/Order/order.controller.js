@@ -4,6 +4,7 @@ const ErrorHandler = require("../../utils/errorHandler");
 const db = require("../../model");
 const Product = db.product;
 const Order = db.order;
+const User = db.user;
 // const Transaction = db.transaction;
 const Inventory = db.inventory;
 const Cart = db.cart;
@@ -87,11 +88,32 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
   for (const carts of cart) {
     await carts.destroy();
   }
-  return res.status(201).json({
+  res.status(201).json({
     success: true,
     message: "Order created successfully",
     order,
   });
+
+  const verifiedCouriers = await User.findAndCountAll({
+    where: {role: 'courier', isVerified: true},
+    attributes: ['id']
+  });
+  const count = verifiedCouriers.count;
+  const recentOrders = await Order.findAll({
+    where: {status: 'delivered'},
+    attributes: ['courierId'],
+    order: [['updatedAt', 'desc']],
+    limit: count
+  });
+  const assignedCourierID = recentOrders.rows[0].courierId
+  await Notification.create({
+    userId: assignedCourierID,
+    type: "order",
+    description: `A new order has been assigned to you`,
+    read: false,
+  });
+  await Order.update({courierId: assignedCourierID}, {where: {id: order.id}});
+  
 });
 exports.editOrder = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
