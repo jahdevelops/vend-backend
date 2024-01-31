@@ -18,6 +18,15 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
     },
+    courierId: {
+      type: DataTypes.UUID,
+      references: {
+        model: "users",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
+    },
     status: {
       type: DataTypes.ENUM("pending", "processing", "shipped", "delivered"),
     },
