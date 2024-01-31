@@ -87,33 +87,20 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
   });
   for (const carts of cart) {
     await carts.destroy();
-  }
-  res.status(201).json({
+  };
+  const assignedCourierID = await assignCourier(order);
+  await Notification.create({
+    userId: assignedCourierID,
+    type: "order",
+    description: "A new order has been assigned to you",
+    read: false,
+  });
+  
+  return res.status(201).json({
     success: true,
     message: "Order created successfully",
     order,
   });
-
-  const verifiedCouriers = await User.findAndCountAll({
-    where: {role: 'courier', isVerified: true},
-    attributes: ['id']
-  });
-  const count = verifiedCouriers.count;
-  const recentOrders = await Order.findAll({
-    where: {status: 'delivered'},
-    attributes: ['courierId'],
-    order: [['updatedAt', 'desc']],
-    limit: count
-  });
-  const assignedCourierID = recentOrders.rows[0].courierId
-  await Notification.create({
-    userId: assignedCourierID,
-    type: "order",
-    description: `A new order has been assigned to you`,
-    read: false,
-  });
-  await Order.update({courierId: assignedCourierID}, {where: {id: order.id}});
-  
 });
 exports.editOrder = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
@@ -184,3 +171,20 @@ exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
   await order.destroy();
   res.status(204).end();
 });
+
+async function assignCourier(order) {
+  const verifiedCouriers = await User.findAndCountAll({
+    where: {role: 'courier', isVerified: true},
+    attributes: ['id']
+  });
+  const count = verifiedCouriers.count;
+  const recentOrders = await Order.findAll({
+    where: {status: 'delivered'},
+    attributes: ['courierId'],
+    order: [['updatedAt', 'desc']],
+    limit: count
+  });
+  const assignedCourierID = recentOrders.rows[0].courierId
+  await Order.update({courierId: assignedCourierID}, {where: {id: order.id}});
+  return assignedCourierID
+}
