@@ -87,15 +87,15 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
   });
   for (const carts of cart) {
     await carts.destroy();
-  };
-  const assignedCourierID = await assignCourier(order);
-  await Notification.create({
-    userId: assignedCourierID,
-    type: "order",
-    description: "A new order has been assigned to you",
-    read: false,
-  });
-  
+  }
+  // const assignedCourierID = await assignCourier(order);
+  // await Notification.create({
+  //   userId: assignedCourierID,
+  //   type: "order",
+  //   description: "A new order has been assigned to you",
+  //   read: false,
+  // });
+
   return res.status(201).json({
     success: true,
     message: "Order created successfully",
@@ -172,19 +172,22 @@ exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
   res.status(204).end();
 });
 
-async function assignCourier(order) {
-  const verifiedCouriers = await User.findAndCountAll({
-    where: {role: 'courier', isVerified: true},
-    attributes: ['id']
-  });
-  const count = verifiedCouriers.count;
-  const recentOrders = await Order.findAll({
-    where: {status: 'delivered'},
-    attributes: ['courierId'],
-    order: [['updatedAt', 'desc']],
-    limit: count
-  });
-  const assignedCourierID = recentOrders.rows[0].courierId
-  await Order.update({courierId: assignedCourierID}, {where: {id: order.id}});
-  return assignedCourierID
-}
+// async function assignCourier(order) {
+//   const verifiedCouriers = await User.findAndCountAll({
+//     where: {role: 'courier', isVerified: true},
+//     attributes: ['id']
+//   });
+//   const count = verifiedCouriers.count;
+//   const recentOrders = await Order.findAll({
+//     where: {status: 'delivered'},
+//     attributes: ['courierId'],
+//     order: [['updatedAt', 'desc']],
+//     limit: count
+//   });
+//   if (verifiedCouriers.rows.length === 0) {
+
+//   };
+//   const assignedCourierID = recentOrders.rows[0].courierId
+//   await Order.update({courierId: assignedCourierID}, {where: {id: order.id}});
+//   return assignedCourierID
+// }
