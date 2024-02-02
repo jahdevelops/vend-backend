@@ -1,9 +1,9 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, DataTypes) {
-    await queryInterface.addColumn('orders', 'courierId', { 
+  async up(queryInterface, DataTypes) {
+    await queryInterface.addColumn("orders", "courierId", {
       type: DataTypes.UUID,
       references: {
         model: "users",
@@ -14,7 +14,7 @@ module.exports = {
     });
   },
 
-  async down (queryInterface) {
-    await queryInterface.removeColumn('orders', 'courierId');
-  }
+  async down(queryInterface) {
+    await queryInterface.removeColumn("orders", "courierId");
+  },
 };

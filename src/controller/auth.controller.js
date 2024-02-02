@@ -27,10 +27,10 @@ exports.register = catchAsyncErrors(async (req, res, next) => {
   const { email, first_name, last_name, password, role } = req.body;
   if (!email || !first_name || !last_name || !password) {
     return next(new ErrorHandler(requiredField.message, requiredField.code));
-  };
-  if (!['courier', 'admin', 'buyer', 'seller'].includes(role)) {
+  }
+  if (!["courier", "admin", "buyer", "seller"].includes(role)) {
     return next(new ErrorHandler("Invalid role selected", requiredField.code));
-  };
+  }
   const salt = bcrypt.genSaltSync(10);
   const hash = bcrypt.hashSync(password, salt);
 
@@ -87,14 +87,14 @@ exports.register = catchAsyncErrors(async (req, res, next) => {
 
 exports.login = catchAsyncErrors(async (req, res, next) => {
   // await seed();
-  const { email, role } = req.body;
-  if (!email || !role) {
+  const { email } = req.body;
+  if (!email) {
     return next(new ErrorHandler(requiredField.message, requiredField.code));
-  };
+  }
 
   // Use the 'attributes' option to select specific fields
   const withPassword = await User.findOne({
-    where: { email: email, role: role },
+    where: { email: email },
     attributes: ["password", "role"],
   });
   if (!withPassword)

@@ -35,7 +35,7 @@ module.exports = {
         password: hash,
         role: "seller",
         isVerified: true,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: adminId,
@@ -45,7 +45,7 @@ module.exports = {
         password: hash,
         role: "admin",
         isVerified: true,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: buyerId,
@@ -55,7 +55,7 @@ module.exports = {
         password: hash,
         role: "buyer",
         isVerified: true,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: courierId1,
@@ -65,7 +65,7 @@ module.exports = {
         password: hash,
         role: "courier",
         isVerified: true,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: courierId2,
@@ -75,7 +75,7 @@ module.exports = {
         password: hash,
         role: "courier",
         isVerified: true,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: courierId3,
@@ -85,16 +85,7 @@ module.exports = {
         password: hash,
         role: "courier",
         isVerified: true,
-        updatedAt: new Date()
-      },
-      {
-        id: courierId,
-        first_name: "courier",
-        last_name: "courier",
-        email: "courier@ecom.com",
-        password: hash,
-        role: "courier",
-        isVerified: true,
+        updatedAt: new Date(),
       },
     ]);
 
@@ -158,7 +149,7 @@ module.exports = {
         id: crypto.randomUUID(),
         userId: buyerId,
         status: "delivered",
-        paymentMethod: 'on_delievery',
+        paymentMethod: "on_delievery",
         courierId: courierId1,
         updatedAt: new Date(),
         carts: JSON.stringify([
@@ -166,15 +157,15 @@ module.exports = {
             id: crypto.randomUUID(),
             productId,
             sellerId,
-            userId: buyerId
+            userId: buyerId,
           },
-        ])
+        ]),
       },
       {
         id: crypto.randomUUID(),
         userId: buyerId,
         status: "delivered",
-        paymentMethod: 'on_delievery',
+        paymentMethod: "on_delievery",
         courierId: courierId2,
         updatedAt: new Date(),
         carts: JSON.stringify([
@@ -182,15 +173,15 @@ module.exports = {
             id: crypto.randomUUID(),
             productId,
             sellerId,
-            userId: buyerId
+            userId: buyerId,
           },
-        ])
+        ]),
       },
       {
         id: crypto.randomUUID(),
         userId: buyerId,
         status: "delivered",
-        paymentMethod: 'on_delievery',
+        paymentMethod: "on_delievery",
         courierId: courierId3,
         updatedAt: new Date(),
         carts: JSON.stringify([
@@ -198,9 +189,9 @@ module.exports = {
             id: crypto.randomUUID(),
             productId,
             sellerId,
-            userId: buyerId
+            userId: buyerId,
           },
-        ])
+        ]),
       },
     ]);
 
