@@ -95,7 +95,7 @@ exports.login = catchAsyncErrors(async (req, res, next) => {
   // Use the 'attributes' option to select specific fields
   const withPassword = await User.findOne({
     where: { email: email },
-    attributes: ["password", "role"],
+    attributes: ["password"],
   });
   if (!withPassword)
     return next(new ErrorHandler("Email or password is incorrect", 400));

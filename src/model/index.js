@@ -28,9 +28,9 @@ const sequelize = new Sequelize(
 
     //comment this on local dev
     // dialectOptions: {
-    //   ssl: {
-    //     ca: certificateContents,
-    //   },
+    //     ssl: {
+    //         ca: certificateContents,
+    //     },
     // },
   },
 );
